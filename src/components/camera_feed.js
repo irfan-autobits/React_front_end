@@ -1,4 +1,4 @@
-// CameraFeed.js
+// src/components/camera_feed.js
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 
