@@ -9,7 +9,7 @@ import { io } from "socket.io-client";
 
 const Dashboard = () => {
   const [camEnabled, setcamEnabled] = useState({});
-
+  console.log("cam dash rendered");
   const handle_add_Submit = (camera_name, camera_url) => {
     if (camera_name && camera_url) {
       console.log("camera details are:", { camera_name, camera_url });

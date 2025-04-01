@@ -3,6 +3,7 @@ import { Navigate } from "react-router-dom";
 
 
 const AppRoute = (props) => {
+    console.log("approute rendered");
     // return <React.Fragment>{props.element}</React.Fragment>
     // let res = JSON.parse(localStorage.getItem('token'));
     // if(res !== null){
