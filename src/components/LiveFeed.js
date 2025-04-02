@@ -1,10 +1,9 @@
-// src/components/CameraManager.js
+// src/components/LiveFeed.js
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
-import './CameraManager.css'; // Create this file for component-specific styling
-import AddCameraModal from './AddCameraModal';
+import './LiveFeed.css'; // Create this file for component-specific styling
 
-const CameraManager = () => {
+const LiveFeed = () => {
   // State for list of cameras (fetched from API)
   const [cameraList, setCameraList] = useState([]);
   // State for open/close toggling for each camera
@@ -45,57 +44,6 @@ const CameraManager = () => {
       setCamEnabled(initialEnabled);
     } catch (error) {
       console.error("Error fetching cameras:", error);
-    }
-  };
-
-  // // State for form inputs
-  // const [newCameraName, setNewCameraName] = useState('');
-  // const [newCameraUrl, setNewCameraUrl] = useState('');
-  // // API call to add a camera
-  // const handleAddCamera = async (e) => {
-  //   e.preventDefault();
-  //   if (!newCameraName || !newCameraUrl) {
-  //     alert("Please fill in all fields");
-  //     return;
-  //   }
-  //   try {
-  //     const response = await fetch('/api/add_camera', {
-  //       method: 'POST',
-  //       headers: { 'Content-Type': 'application/json' },
-  //       body: JSON.stringify({ camera_name: newCameraName, camera_url: newCameraUrl })
-  //     });
-  //     const data = await response.json();
-  //     console.log("Camera added:", data);
-  //     // Refresh the camera list
-  //     fetchCameras();
-  //     // Reset form fields
-  //     setNewCameraName('');
-  //     setNewCameraUrl('');
-  //   } catch (error) {
-  //     console.error("Error adding camera:", error);
-  //   }
-  // };
-
-  const [isModalVisible, setModalVisible] = useState(false);
-
-  const handleAddCamera = ({ name, url }) => {
-    console.log("Adding camera:", name, url);
-    if (!name || !url) {
-      alert("Please fill in all fields");
-      return;
-    }    
-    try {
-      const response = fetch('/api/add_camera', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ camera_name: name, camera_url: url })
-      });
-      const data = response.json();
-      console.log("Camera added:", data);
-      // Refresh the camera list
-      fetchCameras();
-    } catch (error) {
-      console.error("Error adding camera:", error);
     }
   };
 
@@ -164,42 +112,14 @@ const CameraManager = () => {
 
   return (
     <div className="camera-manager">
-      <h2>Camera Management</h2>
-
-      {/* Form to add a new camera */}
-      {/* <form onSubmit={handleAddCamera} className="camera-form">
-        <input
-          type="text"
-          placeholder="Camera Name"
-          value={newCameraName}
-          onChange={(e) => setNewCameraName(e.target.value)}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Camera URL"
-          value={newCameraUrl}
-          onChange={(e) => setNewCameraUrl(e.target.value)}
-          required
-        />
-        <button type="submit">Add Camera</button>
-      </form> */}
-
-      {/* Modal for adding camera */}
-      <button onClick={() => setModalVisible(true)}>Add Camera</button>
-      {isModalVisible && (
-        <AddCameraModal 
-          onClose={() => setModalVisible(false)} 
-          onAddCamera={handleAddCamera} 
-        />
-      )}
+      <h2>Live Feed</h2>
 
       {/* List of cameras in sidebar style */}
       <div className="camera-list">
         {cameraList.map((cam) => (
           <div key={cam.camera_name} className="camera-item">
             <span>{cam.camera_name}</span>
-            <button onClick={() => handleRemoveCamera(cam.camera_name)}>Remove</button>
+            {/* <button onClick={() => handleRemoveCamera(cam.camera_name)}>Remove</button> */}
             {camEnabled[cam.camera_name] ? (
               <button onClick={() => handleStopCamera(cam.camera_name)}>Close</button>
             ) : (
@@ -235,4 +155,4 @@ const CameraManager = () => {
   );
 };
 
-export default CameraManager;
+export default LiveFeed;

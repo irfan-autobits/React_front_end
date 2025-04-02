@@ -5,6 +5,8 @@ import DashboardLayout from './components/DashboardLayout';
 import CameraFeed from './components/camera_feed';
 import CameraManager from './components/CameraManager';
 import StatsPage from './components/StatsPage';
+import AnalysisTable from './components/AnalysisTable';
+import LiveFeed from './components/LiveFeed';
 
 function App() {
   console.log("App rendered");
@@ -18,12 +20,16 @@ function App() {
         <Route path="/dashboard/*" element={<DashboardLayout />}>
           {/* Default nested route */}
           {/* <Route index element={<CameraFeed />} />
-          <Route path="cameras" element={<CameraFeed />} /> */}
+          <Route path="live" element={<CameraFeed />} /> */}
         
           <Route index element={<CameraManager />} />
           <Route path="cameras" element={<CameraManager />} />
                     
           <Route path="stats" element={<StatsPage />} />
+
+          <Route path="analysis" element={<AnalysisTable />} />
+
+          <Route path="live" element={<LiveFeed />} />
         </Route>
         
         {/* Fallback for undefined routes */}
