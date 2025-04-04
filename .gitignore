@@ -25,4 +25,8 @@ yarn-error.log*
 package-lock.json
 tree.txt
 *.png
+
+# But do NOT ignore camshutter.png
+!camshutter.png
+
 *.drawio

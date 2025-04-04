@@ -1,39 +1,48 @@
 // src/App.js
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import DashboardLayout from './components/DashboardLayout';
-import CameraFeed from './components/camera_feed';
-import CameraManager from './components/CameraManager';
-import StatsPage from './components/StatsPage';
-import AnalysisTable from './components/AnalysisTable';
-import LiveFeed from './components/LiveFeed';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import DashboardLayout from "./components/DashboardLayout";
+import { privateRoutes, publicRoutes } from "./routes";
+import AppRoute from "./routes/route";
 
 function App() {
   console.log("App rendered");
   return (
     <Router>
       <Routes>
-        {/* Redirect root to /dashboard */}
-        <Route path="/" element={<Navigate to="/dashboard" />} />
-        
-        {/* Dashboard layout with nested routes */}
-        <Route path="/dashboard/*" element={<DashboardLayout />}>
-          {/* Default nested route */}
-          {/* <Route index element={<CameraFeed />} />
-          <Route path="live" element={<CameraFeed />} /> */}
-        
-          <Route index element={<CameraManager />} />
-          <Route path="cameras" element={<CameraManager />} />
-                    
-          <Route path="stats" element={<StatsPage />} />
+        {publicRoutes.map((route, idx) => (
+          <Route
+            path={route.path}
+            element={route.element}
+            key={idx}
+            exact={true}
+          />
+        ))}
 
-          <Route path="analysis" element={<AnalysisTable />} />
-
-          <Route path="live" element={<LiveFeed />} />
+        <Route
+          path="/"
+          element={
+            <AppRoute>
+              <DashboardLayout />
+            </AppRoute>
+          }
+        >
+          {privateRoutes.map((route, idx) => (
+            <Route
+              path={route.path}
+              element={route.element}
+              key={idx}
+              exact={true}
+            />
+          ))}
         </Route>
-        
-        {/* Fallback for undefined routes */}
-        <Route path="*" element={<div>404 Not Found</div>} />
+
+        <Route path="*" element={<Navigate to="/404" />} />
       </Routes>
     </Router>
   );

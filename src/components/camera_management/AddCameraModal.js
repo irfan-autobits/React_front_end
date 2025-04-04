@@ -112,6 +112,3 @@ const AddCameraModal = ({ onClose, onAddCamera }) => {
 };
 
 export default AddCameraModal;
-
-
-// rtsp://autobits:Autobits@123@192.168.1.203:554

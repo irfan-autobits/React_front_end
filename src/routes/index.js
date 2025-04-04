@@ -1,12 +1,14 @@
 // src/routes/index.js
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import DashboardLayout from '../components/DashboardLayout';
-import CameraFeed from '../components/camera_feed';
-import StatsPage from '../components/StatsPage';
-import Login from '../components/login';
-import Signup from '../components/sign_up';
-import Logout from '../components/logout';
+import Logout        from '../components/user_auth/logout';
+import Login         from '../components/user_auth/login';
+import Signup        from '../components/user_auth/sign_up';
+import CameraManager from '../components/camera_management/CameraManager';
+import AnalysisTable from '../components/analy_tab/AnalysisTable';
+import StatsPage     from '../components/stats/StatsPage';
+import LiveFeed      from '../components/live_stream/LiveFeed';
+import Tracker       from '../components/journey/Tracker';
 
 const publicRoutes = [
   { path: "/logout", element: <Logout /> },
@@ -16,15 +18,12 @@ const publicRoutes = [
 ];
 
 const privateRoutes = [
-  {
-    path: "/dashboard/*",
-    element: <DashboardLayout />,
-    children: [
-      { path: "cameras", element: <CameraFeed /> },
-      { path: "stats", element: <StatsPage /> },
-      { path: "", element: <CameraFeed /> }  // default route
-    ],
-  },
+  { path: "", element: <Navigate to="/cameras" /> },
+  { path: "cameras", element: <CameraManager /> },
+  { path: "analysis", element: <AnalysisTable /> },
+  { path: "stats", element: <StatsPage /> },
+  { path: "live", element: <LiveFeed /> },
+  { path: "tracker", element: <Tracker /> },
 ];
 
 export { publicRoutes, privateRoutes };

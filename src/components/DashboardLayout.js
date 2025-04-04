@@ -3,32 +3,37 @@ import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import './DashboardLayout.css'; // Your layout CSS
 
-const DashboardLayout = () => {
+const DashboardLayout = (props) => {
   return (
     <div className="dashboard-layout">
       <aside className="sidebar">
         <nav>
           <ul>
             <li>
-              <NavLink to="/dashboard/cameras" className={({ isActive }) => (isActive ? 'active' : '')}>
+              <NavLink to="/cameras" className={({ isActive }) => (isActive ? 'active' : '')}>
                 Camera Manager
               </NavLink>
             </li>
             <li>
-              <NavLink to="/dashboard/stats" className={({ isActive }) => (isActive ? 'active' : '')}>
+              <NavLink to="/stats" className={({ isActive }) => (isActive ? 'active' : '')}>
                 Stats &amp; Insights
               </NavLink>
             </li>
             <li>
-              <NavLink to="/dashboard/analysis" className={({ isActive }) => (isActive ? 'active' : '')}>
+              <NavLink to="/analysis" className={({ isActive }) => (isActive ? 'active' : '')}>
                 Analysis
               </NavLink>
             </li>
             <li>
-              <NavLink to="/dashboard/live" className={({ isActive }) => (isActive ? 'active' : '')}>
+              <NavLink to="/live" className={({ isActive }) => (isActive ? 'active' : '')}>
                 Live Feed
               </NavLink>
             </li>
+            <li>
+              <NavLink to="/tracker" className={({ isActive }) => (isActive ? 'active' : '')}>
+                Person Tracker
+              </NavLink>
+            </li>            
           </ul>
         </nav>
       </aside>

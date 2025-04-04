@@ -1,47 +1,37 @@
-// src/components/login.js
+// src/components/sign_up.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Login = () => {
+const Signup = () => {
+    const navigate = useNavigate(); // For navigation
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  // const [data, setData] = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const navigate = useNavigate(); // For navigation
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    // Basic validation (for demonstration purposes)
     if (email && password) {
       setLoading(true); // Start loading state
       setError(null); // Reset error state
-      // setData(null); // Reset previous data
-      console.log('credentials are:', { email, password });
-  
-      fetch('/api/login', {
+      console.log('User created successfully:', { email, password });
+      
+      fetch('/api/sign', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email: email, password: password }),
       })
-        .then(async (response) => {
-          const responseData = await response.json(); // Parse JSON response
-          if (!response.ok) {
-            // Handle HTTP error responses
-            throw new Error(responseData.error || 'Something went wrong');
-          }
-          return responseData; // Successful response
-        })
+        .then((response) => response.json())
         .then((data) => {
-          let expiry = new Date().getTime() + 24 * 60 * 60 * 1000; // 1 day
-          // setData(data); // Set the fetched datadatadatag
+          setData(data); // Set the fetched data
           setLoading(false); // End loading state
-          localStorage.setItem('authToken', JSON.stringify({"token": data.token, expiry: expiry}));
-          navigate('/dashboard'); // Redirect to another route
         })
         .catch((error) => {
-          setError(error.message || 'An error occurred'); // Set error message
+          setError('An error occurred while fetching data'); // Set error state
           setLoading(false); // End loading state
           console.error('Error fetching data:', error);
         });
@@ -49,11 +39,10 @@ const Login = () => {
       alert('Please fill in all fields');
     }
   };
-  
 
   return (
-    <div className="login-container">
-      <h2>Login</h2>
+    <div className="signup-container">
+      <h2>Sign Up</h2>
       <form onSubmit={handleSubmit}>
         <div className="form-group">
           <label>Email:</label>
@@ -75,26 +64,30 @@ const Login = () => {
             required
           />
         </div>
-        <button type="submit">Login</button>
+        <button type="submit">Sign Up</button>
       </form>
 
       <div>
 
         <p>
-          Don't have an account?
-          <a onClick={() => navigate("/register")}>Sign up</a>
+          Already have an account?
+          <a onClick={() => navigate("/login")}>Login</a>
         </p>
-        <h2>Responce</h2>
+        {/* <h2>Responce</h2>
         {loading ? (
           <p>Loading...</p> // Show loading state
         ) : error ? (
           <p style={{ color: 'red' }}>{error}</p> // Show error state
+        ) : data ? (
+          <div>
+            <p>{data.message}</p>
+          </div>
         ) : (
           <p>No data yet</p> // No data state
-        )}
+        )} */}
       </div>
     </div>
   );
 };
 
-export default Login;
+export default Signup;

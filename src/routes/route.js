@@ -1,10 +1,11 @@
+// src/routes/route.js
 import React from "react";
 import { Navigate } from "react-router-dom";
 
 
 const AppRoute = (props) => {
-    console.log("approute rendered");
-    // return <React.Fragment>{props.element}</React.Fragment>
+    console.log("approute rendered", props);
+    // return <React.Fragment>{props.children}</React.Fragment>
     // let res = JSON.parse(localStorage.getItem('token'));
     // if(res !== null){
     //     return (
@@ -32,7 +33,7 @@ const AppRoute = (props) => {
             <Navigate to="/login" />
         );
     }
-    return <React.Fragment>{props.element}</React.Fragment>
+    return <React.Fragment>{props.children}</React.Fragment>
 };
 
 export default AppRoute;

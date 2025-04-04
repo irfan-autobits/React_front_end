@@ -16,7 +16,7 @@ const AnalysisTable = () => {
       try {
         const response = await fetch('/api/reco_table');
         const jsonData = await response.json();
-        console.log("Fetched data:", jsonData);
+        // console.log("Fetched data:", jsonData);
         // setData(jsonData); // assume jsonData is an array of objects
         setData(jsonData.detections || []); // assume jsonData is an object which has array of objects
       } catch (error) {

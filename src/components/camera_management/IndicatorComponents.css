@@ -1,0 +1,21 @@
+/* url(IndicatorComponents.css) */
+.getway_icon_inner {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    font-size: 14px;
+    font-family: helvetica_ceregular !important;
+    border-spacing: 0;
+    border-collapse: collapse;
+    line-height: 40px;
+    color: inherit;
+    box-sizing: border-box;
+    padding: 0;
+    outline: none !important;
+    float: left;
+    margin: 7.5px;
+    display: inline-block;
+    width: 15px;
+    height: 15px;
+    border-radius: 9px;
+    background-color: rgb(249 255 82);
+  }
