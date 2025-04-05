@@ -33,7 +33,12 @@ const DashboardLayout = (props) => {
               <NavLink to="/tracker" className={({ isActive }) => (isActive ? 'active' : '')}>
                 Person Tracker
               </NavLink>
-            </li>            
+            </li>    
+            <li>
+              <NavLink to="/subjectman" className={({ isActive }) => (isActive ? 'active' : '')}>
+                Subjects Manager
+              </NavLink>
+            </li>                      
           </ul>
         </nav>
       </aside>

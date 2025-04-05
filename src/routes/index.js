@@ -9,6 +9,7 @@ import AnalysisTable from '../components/analy_tab/AnalysisTable';
 import StatsPage     from '../components/stats/StatsPage';
 import LiveFeed      from '../components/live_stream/LiveFeed';
 import Tracker       from '../components/journey/Tracker';
+import SubjectMan    from '../components/admin/SubjectMan';
 
 const publicRoutes = [
   { path: "/logout", element: <Logout /> },
@@ -24,6 +25,8 @@ const privateRoutes = [
   { path: "stats", element: <StatsPage /> },
   { path: "live", element: <LiveFeed /> },
   { path: "tracker", element: <Tracker /> },
+  { path: "subjectman", element: <SubjectMan /> },
+  
 ];
 
 export { publicRoutes, privateRoutes };

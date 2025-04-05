@@ -4,7 +4,7 @@ const PersonSelector = ({ onSelectPerson }) => {
     const [people, setPeople] = useState([]);
 
     useEffect(() => {
-        fetch('/api/known_people')
+        fetch('/api/subject_list')
             .then(response => response.json())
             .then(data => {
                 console.log("Fetched people:", data); // Log API response
