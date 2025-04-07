@@ -2,20 +2,35 @@
 import React, { useState, useEffect } from 'react';
 import './CameraManager.css';
 import AddCameraModal from './AddCameraModal';
-import { GreenIndsm, RedIndsm } from './IndicatorComponents'; // your indicator components
-import symbolicCameraImg from '../../assets/camshutter.png'; // a symbolic camera icon image
+import { GreenIndicator, RedIndicator } from './IndicatorComponents';
+import symbolicCameraImg from '../../assets/camshutter.png';
+import LiveFeed from './LiveFeed';
+import { io } from 'socket.io-client';
 
 const CameraManager = () => {
   const [cameraList, setCameraList] = useState([]);
   const [camEnabled, setCamEnabled] = useState({});
   const [isModalVisible, setModalVisible] = useState(false);
+  const [activeCameraName, setActiveCameraName] = useState(localStorage.getItem('activeCamera') || null);
+  const [cameraFeeds, setCameraFeeds] = useState({});
 
-  // Fetch camera list from the backend
+  // Socket connection and initial fetch
   useEffect(() => {
     console.log("CameraManager mounted");
     fetchCameras();
+
+    const socket = io();
+    socket.on('frame', ({ camera_name, status, image }) => {
+      setCameraFeeds(prev => ({
+        ...prev,
+        [camera_name]: { status, image },
+      }));
+    });
+
+    return () => socket.disconnect();
   }, []);
 
+  // Fetch cameras from backend
   const fetchCameras = async () => {
     try {
       const response = await fetch('/api/camera_list');
@@ -23,15 +38,16 @@ const CameraManager = () => {
       setCameraList(data.cameras || []);
       const initialEnabled = {};
       data.cameras.forEach(cam => {
-        initialEnabled[cam.camera_name] = cam.status; // assume backend provides a 'status' field (true for on, false for off)
+        initialEnabled[cam.camera_name] = cam.status; // true if processing
       });
-      console.log("processing camera list : ",initialEnabled)
+      console.log("processing camera list : ", initialEnabled);
       setCamEnabled(initialEnabled);
     } catch (error) {
       console.error("Error fetching cameras:", error);
     }
   };
 
+  // Add a new camera
   const handleAddCamera = ({ name, url }) => {
     if (!name || !url) {
       alert("Please fill in all fields");
@@ -50,6 +66,7 @@ const CameraManager = () => {
       .catch(error => console.error("Error adding camera:", error));
   };
 
+  // Remove a camera
   const handleRemoveCamera = async (cameraName) => {
     try {
       await fetch('/api/remove_camera', {
@@ -63,6 +80,7 @@ const CameraManager = () => {
     }
   };
 
+  // Start/stop processing (for status indicator)
   const handleStartCamera = async (cameraName) => {
     try {
       await fetch('/api/start_proc', {
@@ -89,6 +107,47 @@ const CameraManager = () => {
     }
   };
 
+  // Feed control functions
+  const handleOpenFeed = async (cameraName) => {
+    try {
+      await fetch('/api/start_feed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ camera_name: cameraName }),
+      });
+      localStorage.setItem('activeCamera', cameraName);
+      setActiveCameraName(cameraName);
+      fetchCameras();
+    } catch (error) {
+      console.error("Error opening feed:", error);
+    }
+  };
+
+  const handleCloseFeed = async (cameraName) => {
+    try {
+      await fetch('/api/stop_feed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ camera_name: cameraName }),
+      });
+      if (activeCameraName === cameraName) {
+        setActiveCameraName(null);
+        localStorage.removeItem('activeCamera');
+      }
+      fetchCameras();
+    } catch (error) {
+      console.error("Error closing feed:", error);
+    }
+  };
+
+  // Fullscreen handler for feed image
+  const handleFullscreen = (cameraName) => {
+    const imgElement = document.getElementById("feed_" + cameraName);
+    if (imgElement?.requestFullscreen) {
+      imgElement.requestFullscreen();
+    }
+  };
+
   return (
     <div className="camera-manager">
       <h2>Camera Management (Status View)</h2>
@@ -99,18 +158,26 @@ const CameraManager = () => {
       <div className="camera-list">
         {cameraList.map(cam => (
           <div key={cam.camera_name} className="camera-item">
-            <img src={symbolicCameraImg} alt="Camera Icon" className="feed-img"/>
-
+            <img src={symbolicCameraImg} alt="Camera Icon" className="feed-img" />
             <span>{cam.camera_name}</span>
-            {camEnabled[cam.camera_name] ? (
-              <GreenIndsm onClick={() => handleStopCamera(cam.camera_name)} />
+            {camEnabled[cam.camera_name] ? <GreenIndicator /> : <RedIndicator />}
+            <button onClick={() => handleStartCamera(cam.camera_name)}>Start Cam</button>
+            <button onClick={() => handleStopCamera(cam.camera_name)}>Stop Cam</button>
+            {activeCameraName === cam.camera_name ? (
+              <button onClick={() => handleCloseFeed(cam.camera_name)}>Close Feed</button>
             ) : (
-              <RedIndsm onClick={() => handleStartCamera(cam.camera_name)} />
+              <button onClick={() => handleOpenFeed(cam.camera_name)}>Open Feed</button>
             )}
             <button onClick={() => handleRemoveCamera(cam.camera_name)}>Remove</button>
           </div>
         ))}
       </div>
+      <LiveFeed 
+        activeCameraName={activeCameraName} 
+        handleCloseFeed={handleCloseFeed} 
+        cameraFeeds={cameraFeeds} 
+        handleFullscreen={handleFullscreen} 
+      />
     </div>
   );
 };

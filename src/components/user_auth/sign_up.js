@@ -73,7 +73,7 @@ const Signup = () => {
           Already have an account?
           <a onClick={() => navigate("/login")}>Login</a>
         </p>
-        {/* <h2>Responce</h2>
+        <h2>Responce</h2>
         {loading ? (
           <p>Loading...</p> // Show loading state
         ) : error ? (
@@ -84,7 +84,7 @@ const Signup = () => {
           </div>
         ) : (
           <p>No data yet</p> // No data state
-        )} */}
+        )} 
       </div>
     </div>
   );

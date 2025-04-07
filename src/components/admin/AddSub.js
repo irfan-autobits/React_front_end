@@ -1,21 +1,27 @@
-// src/components/admin/AddSub.js
 import React, { useState } from 'react';
 
 const AddSubjectForm = ({ onSubjectAdded }) => {
   const [subjectName, setSubjectName] = useState('');
-  const [file, setFile] = useState(null);
+  const [files, setFiles] = useState(null); // now storing FileList
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!file) {
-      alert("Please select an image");
+    if (!files || files.length === 0) {
+      alert("Please select at least one image");
       return;
     }
     const formData = new FormData();
-    formData.append('file', file);
+    
+    // Append each selected file. The backend will use request.files.getlist('file')
+    for (let i = 0; i < files.length; i++) {
+      formData.append('file', files[i]);
+    }
+    
+    // Append subject name if provided.
     if (subjectName.trim()) {
       formData.append('subject_name', subjectName);
     }
+    
     try {
       const response = await fetch('/api/add_sub', {
         method: 'POST',
@@ -23,7 +29,7 @@ const AddSubjectForm = ({ onSubjectAdded }) => {
       });
       const result = await response.json();
       console.log("Subject added:", result);
-      onSubjectAdded(); // Notify parent to refresh list
+      onSubjectAdded(); // trigger a refresh
     } catch (error) {
       console.error("Error adding subject:", error);
     }
@@ -41,14 +47,15 @@ const AddSubjectForm = ({ onSubjectAdded }) => {
         />
       </div>
       <div>
-        <label>Upload Image:</label>
+        <label>Upload Image(s):</label>
         <input
           type="file"
           accept="image/*"
-          onChange={(e) => setFile(e.target.files[0])}
+          multiple
+          onChange={(e) => setFiles(e.target.files)}
         />
       </div>
-      <button type="submit">Add Subject</button>
+      <button type="submit">Add Subject(s)</button>
     </form>
   );
 };

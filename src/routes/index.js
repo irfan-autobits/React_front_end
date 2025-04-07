@@ -7,7 +7,6 @@ import Signup        from '../components/user_auth/sign_up';
 import CameraManager from '../components/camera_management/CameraManager';
 import AnalysisTable from '../components/analy_tab/AnalysisTable';
 import StatsPage     from '../components/stats/StatsPage';
-import LiveFeed      from '../components/live_stream/LiveFeed';
 import Tracker       from '../components/journey/Tracker';
 import SubjectMan    from '../components/admin/SubjectMan';
 
@@ -23,7 +22,6 @@ const privateRoutes = [
   { path: "cameras", element: <CameraManager /> },
   { path: "analysis", element: <AnalysisTable /> },
   { path: "stats", element: <StatsPage /> },
-  { path: "live", element: <LiveFeed /> },
   { path: "tracker", element: <Tracker /> },
   { path: "subjectman", element: <SubjectMan /> },
   

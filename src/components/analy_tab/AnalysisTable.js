@@ -2,45 +2,48 @@
 import React, { useState, useEffect } from 'react';
 
 const AnalysisTable = () => {
-  // State to hold detection records
   const [data, setData] = useState([]);
-  // State for sorting
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
   const [sortField, setSortField] = useState('');
   const [sortOrder, setSortOrder] = useState('asc');
-  // State for filtering (simple text search)
-  const [filterText, setFilterText] = useState('');
+  const itemsPerPage = 10;
 
-  // Fetch detection data on component mount
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch('/api/reco_table');
-        const jsonData = await response.json();
-        // console.log("Fetched data:", jsonData);
-        // setData(jsonData); // assume jsonData is an array of objects
-        setData(jsonData.detections || []); // assume jsonData is an object which has array of objects
-      } catch (error) {
-        console.error('Error fetching detection table data:', error);
-      }
-    };
+    fetchData(currentPage);
+  }, [currentPage]);
 
-    fetchData();
-  }, []);
- 
-  // Handle sorting when a header is clicked
+  const fetchData = async (page) => {
+    try {
+      const response = await fetch(`/api/reco_table?page=${page}&limit=${itemsPerPage}`);
+      const jsonData = await response.json();
+      setData(jsonData.detections || []);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching detection table data:', error);
+      setLoading(false);
+    }
+  };
+
   const handleSort = (field) => {
-    // Toggle sort order if the same field is clicked again
     const newSortOrder = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
     setSortField(field);
     setSortOrder(newSortOrder);
   };
 
-  // Filter data based on filterText
+  const handlePrevPage = () => {
+    if (currentPage > 1) setCurrentPage(prev => prev - 1);
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(prev => prev + 1);
+  };
+
   const filteredData = data.filter(record =>
-    Object.values(record).some(val => String(val).toLowerCase().includes(filterText.toLowerCase()))
+    Object.values(record).some(val => String(val).toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  // Sort the filtered data
   const sortedData = [...filteredData].sort((a, b) => {
     if (!sortField) return 0;
     if (a[sortField] < b[sortField]) return sortOrder === 'asc' ? -1 : 1;
@@ -48,14 +51,21 @@ const AnalysisTable = () => {
     return 0;
   });
 
+  if (loading) {
+    return <div>Loading detection records...</div>;
+  }
+
   return (
     <div>
       <h2>Detection Table</h2>
-      <input 
-         type="text" 
-         placeholder="Filter results..." 
-         value={filterText} 
-         onChange={e => setFilterText(e.target.value)} 
+      <input
+        type="text"
+        placeholder="Filter results..."
+        value={searchTerm}
+        onChange={e => {
+          setSearchTerm(e.target.value);
+          setCurrentPage(1);
+        }}
       />
       <table>
         <thead>
@@ -66,7 +76,7 @@ const AnalysisTable = () => {
             <th onClick={() => handleSort('det_score')}>Detection Score</th>
             <th onClick={() => handleSort('distance')}>Distance from known</th>
             <th onClick={() => handleSort('timestamp')}>Timestamp</th>
-            <th onClick={() => handleSort('det_face')}>Image</th>
+            <th>Image</th>
           </tr>
         </thead>
         <tbody>
@@ -75,14 +85,27 @@ const AnalysisTable = () => {
               <td>{record.id}</td>
               <td>{record.person}</td>
               <td>{record.camera_name}</td>
-              <td>{record.det_score}</td>
+              <td>{(record.det_score).toFixed(1)}%</td>
               <td>{record.distance}</td>
-              <td>{record.timestamp}</td>
-              <td><img src={record.det_face} alt="Detected Face" width="50" height="50" /></td>
+              <td>{new Date(record.timestamp).toLocaleString()}</td>
+              <td>
+                <img src={record.det_face} alt="Detected Face" width="50" height="50" />
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
+      <div className="pagination">
+        <button onClick={handlePrevPage} disabled={currentPage === 1}>
+          Previous
+        </button>
+        <span>
+          Page {currentPage}
+        </span>
+        <button onClick={handleNextPage}>
+          Next
+        </button>
+      </div>
     </div>
   );
 };

@@ -25,11 +25,6 @@ const DashboardLayout = (props) => {
               </NavLink>
             </li>
             <li>
-              <NavLink to="/live" className={({ isActive }) => (isActive ? 'active' : '')}>
-                Live Feed
-              </NavLink>
-            </li>
-            <li>
               <NavLink to="/tracker" className={({ isActive }) => (isActive ? 'active' : '')}>
                 Person Tracker
               </NavLink>

@@ -44,6 +44,20 @@ const SubjectList = ({ refreshTrigger }) => {
     if (currentPage < totalPages) setCurrentPage(prev => prev + 1);
   };
 
+  const handleRemove = async (subjectId) => {
+    try {
+      // Call your backend delete endpoint
+      const response = await fetch(`/api/remove_sub/${subjectId}`, {
+        method: 'DELETE',
+      });
+      const result = await response.json();
+      console.log("Subject removed:", result);
+      fetchSubjects(); // Refresh the list after deletion
+    } catch (error) {
+      console.error("Error removing subject:", error);
+    }
+  };
+
   if (loading) {
     return <div>Loading subjects...</div>;
   }
@@ -61,56 +75,63 @@ const SubjectList = ({ refreshTrigger }) => {
             setCurrentPage(1); // Reset to first page on search
           }}
         />
-      </div>
+      </div>      
       {filteredSubjects.length === 0 ? (
         <p>No subjects available.</p>
       ) : (
         <>
-          <table className="subject-table">
-            <thead>
-              <tr>
-                <th>Image</th>
-                <th>Name</th>
-                <th>Added Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedSubjects.map((sub, index) => (
-                <tr key={index}>
-                  <td>
-                    {sub.images && sub.images.length > 0 ? (
-                        <div
-                        style={{
-                          height: "70px",
-                          width: "70px",
-                          overflow: "hidden",
-                          padding: "5px",
-                          display: "flex",
-                          marginBottom: "13px",justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <img
-                          style={{
-                            maxWidth: "100%",
-                            maxHeight: "100%",
-                            objectFit: "cover",
-                          }}
-                          className="subject-thumbnail" 
-                          src={sub.images[0]}
-                          alt={sub.subject_name}
+        <table className="subject-table">
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>Name</th>
+              <th>Added Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {paginatedSubjects.map((sub, index) => (
+              <tr key={index}>
+                <td>
+                  {sub.images && sub.images.length > 0 ? (
+                    <div
+                    style={{
+                      height: "70px",
+                      width: "70px",
+                      overflow: "hidden",
+                      padding: "5px",
+                      display: "flex",
+                      marginBottom: "13px",justifyContent: "center",
+                      alignItems: "center",
+                    }}
+                  >
+                    <img
+                      style={{
+                        maxWidth: "100%",
+                        maxHeight: "100%",
+                        objectFit: "cover",
+                      }}
+                      className="subject-thumbnail"
+                      src={sub.images[0]}
+                      alt={sub.subject_name}
                         ></img>
-                      </div>
-                    ) : (
-                      <span>No image</span>
-                    )}
-                  </td>
-                  <td>{sub.subject_name}</td>
-                  <td>{new Date(sub.added_date).toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                    </div>
+                  ) : (
+                    <span>No image</span>
+                  )}
+                </td>
+                <td>{sub.subject_name}</td>
+                {/* <td>{sub.added_date}</td> */}
+                <td>{new Date(sub.added_date).toLocaleString()}</td>
+                <td>
+                  <button onClick={() => handleRemove(sub.id)}>
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
           <div className="pagination">
             <button onClick={handlePrevPage} disabled={currentPage === 1}>
               Previous
@@ -129,3 +150,6 @@ const SubjectList = ({ refreshTrigger }) => {
 };
 
 export default SubjectList;
+
+// detection 2025-04-07 11:52:06.916796+00
+// sub add - 2025-04-07 06:22:05.38864+00

@@ -84,14 +84,14 @@ const Login = () => {
           Don't have an account?
           <a onClick={() => navigate("/register")}>Sign up</a>
         </p>
-        {/* <h2>Responce</h2>
+        <h2>Responce</h2>
         {loading ? (
           <p>Loading...</p> // Show loading state
         ) : error ? (
           <p style={{ color: 'red' }}>{error}</p> // Show error state
         ) : (
           <p>No data yet</p> // No data state
-        )} */}
+        )}
       </div>
     </div>
   );
