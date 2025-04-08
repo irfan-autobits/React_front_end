@@ -1,6 +1,7 @@
 // src/components/admin/SubjectList.js
 import React, { useState, useEffect } from 'react';
 import './SubjectList.css';
+const API_URL = process.env.REACT_APP_API_URL;
 
 const SubjectList = ({ refreshTrigger }) => {
   const [subjects, setSubjects] = useState([]);
@@ -10,7 +11,7 @@ const SubjectList = ({ refreshTrigger }) => {
   const itemsPerPage = 5; // Change as desired
 
   const fetchSubjects = () => {
-    fetch('/api/subject_list')
+    fetch(`${API_URL}/api/subject_list`)
       .then(response => response.json())
       .then(data => {
         setSubjects(data.subjects || []);
@@ -47,7 +48,7 @@ const SubjectList = ({ refreshTrigger }) => {
   const handleRemove = async (subjectId) => {
     try {
       // Call your backend delete endpoint
-      const response = await fetch(`/api/remove_sub/${subjectId}`, {
+      const response = await fetch(`${API_URL}/api/remove_sub/${subjectId}`, {
         method: 'DELETE',
       });
       const result = await response.json();

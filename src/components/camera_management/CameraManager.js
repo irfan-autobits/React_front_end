@@ -6,6 +6,7 @@ import { GreenIndicator, RedIndicator } from "./IndicatorComponents";
 import symbolicCameraImg from "../../assets/camshutter.png";
 import LiveFeed from "./LiveFeed";
 import { io } from "socket.io-client";
+const API_URL = process.env.REACT_APP_API_URL;
 
 const CameraManager = () => {
   const [cameraList, setCameraList] = useState([]);
@@ -35,7 +36,7 @@ const CameraManager = () => {
   // Fetch cameras from backend
   const fetchCameras = async () => {
     try {
-      const response = await fetch("/api/camera_list");
+      const response = await fetch(`${API_URL}/api/camera_list`);
       const data = await response.json();
       setCameraList(data.cameras || []);
       const initialEnabled = {};
@@ -55,7 +56,7 @@ const CameraManager = () => {
       alert("Please fill in all fields");
       return;
     }
-    fetch("/api/add_camera", {
+    fetch(`${API_URL}/api/add_camera`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ camera_name: name, camera_url: url }),
@@ -71,7 +72,7 @@ const CameraManager = () => {
   // Remove a camera
   const handleRemoveCamera = async (cameraName) => {
     try {
-      await fetch("/api/remove_camera", {
+      await fetch(`${API_URL}/api/remove_camera`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ camera_name: cameraName }),
@@ -85,7 +86,7 @@ const CameraManager = () => {
   // Start/stop processing (for status indicator)
   const handleStartCamera = async (cameraName) => {
     try {
-      await fetch("/api/start_proc", {
+      await fetch(`${API_URL}/api/start_proc`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ camera_name: cameraName }),
@@ -98,7 +99,7 @@ const CameraManager = () => {
 
   const handleStopCamera = async (cameraName) => {
     try {
-      await fetch("/api/stop_proc", {
+      await fetch(`${API_URL}/api/stop_proc`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ camera_name: cameraName }),
@@ -112,7 +113,7 @@ const CameraManager = () => {
   // Feed control functions
   const handleOpenFeed = async (cameraName) => {
     try {
-      await fetch("/api/start_feed", {
+      await fetch(`${API_URL}/api/start_feed`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ camera_name: cameraName }),
@@ -127,7 +128,7 @@ const CameraManager = () => {
 
   const handleCloseFeed = async (cameraName) => {
     try {
-      await fetch("/api/stop_feed", {
+      await fetch(`${API_URL}/api/stop_feed`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ camera_name: cameraName }),

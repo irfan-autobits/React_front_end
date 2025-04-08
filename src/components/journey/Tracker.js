@@ -3,6 +3,8 @@ import PersonSelector from './ListPerson';
 import ReactFlow, { Background, Controls } from 'reactflow';
 import 'reactflow/dist/style.css';
 import CustomNode from './CustomNode';
+const API_URL = process.env.REACT_APP_API_URL;
+
 const Tracker = () => {
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [movementHistory, setMovementHistory] = useState([]);
@@ -15,7 +17,7 @@ const Tracker = () => {
     if (!personName) return;
     
     try {
-      const response = await fetch(`/api/movement/${encodeURIComponent(personName)}`);
+      const response = await fetch(`${API_URL}/api/movement/${encodeURIComponent(personName)}`);
       const data = await response.json();
       console.log("API response:", data);
       // Data is an array, so set it directly

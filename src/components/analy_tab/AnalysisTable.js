@@ -1,5 +1,6 @@
 // src/components/AnalysisTable.js
 import React, { useState, useEffect } from 'react';
+const API_URL = process.env.REACT_APP_API_URL;
 
 const AnalysisTable = () => {
   const [data, setData] = useState([]);
@@ -16,7 +17,7 @@ const AnalysisTable = () => {
 
   const fetchData = async (page) => {
     try {
-      const response = await fetch(`/api/reco_table?page=${page}&limit=${itemsPerPage}`);
+      const response = await fetch(`${API_URL}/api/reco_table?page=${page}&limit=${itemsPerPage}`);
       const jsonData = await response.json();
       setData(jsonData.detections || []);
       setLoading(false);

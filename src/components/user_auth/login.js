@@ -1,6 +1,7 @@
 // src/components/login.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+const API_URL = process.env.REACT_APP_API_URL;
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -18,7 +19,7 @@ const Login = () => {
       // setData(null); // Reset previous data
       console.log('credentials are:', { email, password });
   
-      fetch('/api/login', {
+      fetch(`${API_URL}/api/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

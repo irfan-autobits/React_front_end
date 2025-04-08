@@ -1,6 +1,7 @@
 // src/components/sign_up.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+const API_URL = process.env.REACT_APP_API_URL;
 
 const Signup = () => {
     const navigate = useNavigate(); // For navigation
@@ -18,7 +19,7 @@ const Signup = () => {
       setError(null); // Reset error state
       console.log('User created successfully:', { email, password });
       
-      fetch('/api/sign', {
+      fetch(`${API_URL}/api/sign`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

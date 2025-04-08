@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
+const API_URL = process.env.REACT_APP_API_URL;
 
 const PersonSelector = ({ onSelectPerson }) => {
     const [people, setPeople] = useState([]);
 
     useEffect(() => {
-        fetch('/api/subject_list')
+        fetch(`${API_URL}/api/subject_list`)
             .then(response => response.json())
             .then(data => {
                 console.log("Fetched people:", data); // Log API response

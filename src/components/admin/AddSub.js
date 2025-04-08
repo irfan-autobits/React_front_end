@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+const API_URL = process.env.REACT_APP_API_URL;
 
 const AddSubjectForm = ({ onSubjectAdded }) => {
   const [subjectName, setSubjectName] = useState('');
@@ -23,7 +24,7 @@ const AddSubjectForm = ({ onSubjectAdded }) => {
     }
     
     try {
-      const response = await fetch('/api/add_sub', {
+      const response = await fetch(`${API_URL}/api/add_sub`, {
         method: 'POST',
         body: formData,
       });
