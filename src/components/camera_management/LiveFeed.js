@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
 import './LiveFeed.css';
+import BasicButtons from "../ui/MuiButton";
 
 const LiveFeed = ({ activeCameraName, handleCloseFeed, cameraFeeds, handleFullscreen }) => {
   // We no longer maintain our own activeCameraName here.
@@ -22,7 +23,12 @@ const LiveFeed = ({ activeCameraName, handleCloseFeed, cameraFeeds, handleFullsc
         <div key="activeFeed" className="camera-feed-card">
           <div className="card-header">
             <h3>{activeCameraName}</h3>
-            <button onClick={() => handleCloseFeed(activeCameraName)} className="close-btn">×</button>
+            {/* <button onClick={() => handleCloseFeed(activeCameraName)} className="close-btn">×</button> */}
+            <BasicButtons
+              onClickHandler={() => handleCloseFeed(activeCameraName)}
+              variant={"text"} 
+              content={"X"} 
+            />            
           </div>
           <div className="card-body">
             <img
