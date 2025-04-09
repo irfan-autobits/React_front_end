@@ -9,7 +9,7 @@ const AnalysisTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortField, setSortField] = useState('');
   const [sortOrder, setSortOrder] = useState('asc');
-  const itemsPerPage = 10;
+  const itemsPerPage = 500;
 
   useEffect(() => {
     fetchData(currentPage);

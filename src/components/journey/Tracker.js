@@ -8,6 +8,9 @@ const API_URL = process.env.REACT_APP_API_URL;
 const Tracker = () => {
   const [selectedPerson, setSelectedPerson] = useState(null);
   const [movementHistory, setMovementHistory] = useState([]);
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+
 
   // Convert the date string to a Date object (ensure ISO format)
   const parseDate = (dateStr) => new Date(dateStr.replace(' ', 'T'));
@@ -15,18 +18,29 @@ const Tracker = () => {
   const fetchMovementHistory = async (personName) => {
     console.log("Fetching journey for:", personName);
     if (!personName) return;
-    
+  
     try {
-      const response = await fetch(`${API_URL}/api/movement/${encodeURIComponent(personName)}`);
+      const response = await fetch(`${API_URL}/api/movement/${encodeURIComponent(personName)}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          start_time: startTime,
+          end_time: endTime,
+        }),
+      });
+  
       const data = await response.json();
       console.log("API response:", data);
-      // Data is an array, so set it directly
       setMovementHistory(data || []);
     } catch (error) {
       console.error("Error fetching movement history:", error);
       setMovementHistory([]);
     }
   };
+  
+  
 
   // Generate nodes and edges for React Flow from movementHistory
   const generateNodesAndEdges = () => {
@@ -57,10 +71,32 @@ const Tracker = () => {
       <PersonSelector onSelectPerson={setSelectedPerson} />
       <button 
         onClick={() => fetchMovementHistory(selectedPerson)} 
-        disabled={!selectedPerson}
+        disabled={!selectedPerson || !startTime || !endTime}
       >
         Show Journey
       </button>
+
+      <div style={{ marginTop: '10px' }}>
+        <label>
+          Start Time: 
+          <input
+            type="datetime-local"
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
+            style={{ margin: '0 10px' }}
+          />
+        </label>
+
+        <label>
+          End Time: 
+          <input
+            type="datetime-local"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+          />
+        </label>
+      </div>
+
       {movementHistory.length > 0 ? (
         <div style={{ width: '100%', height: 300, border: '1px solid #ccc', marginTop: '20px' }}>
         <ReactFlow
