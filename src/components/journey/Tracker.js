@@ -49,7 +49,7 @@ const Tracker = () => {
     const nodes = movementHistory.map((entry, index) => ({
       id: `node-${index}`,
       type: 'custom', 
-      data: { label: `${entry.camera_name}\n at: ${parseDate(entry.entry_time).toLocaleString()}\n Duration: ${entry.duration} s` },
+      data: { label: `${entry.camera_tag}\n at: ${parseDate(entry.entry_time).toLocaleString()}\n Duration: ${entry.duration} s` },
       // position: { x: index * 220, y: 100 },
       position: { x: 100, y: index * 150 }, // x is fixed; y increases with each node
     }));

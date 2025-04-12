@@ -51,7 +51,7 @@ const CameraManager = () => {
   };
 
   // Add a new camera
-  const handleAddCamera = ({ name, url }) => {
+  const handleAddCamera = ({ name, url, tag}) => {
     if (!name || !url) {
       alert("Please fill in all fields");
       return;
@@ -59,7 +59,7 @@ const CameraManager = () => {
     fetch(`${API_URL}/api/add_camera`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ camera_name: name, camera_url: url }),
+      body: JSON.stringify({ camera_name: name, camera_url: url , tag: tag}),
     })
       .then((res) => res.json())
       .then((data) => {

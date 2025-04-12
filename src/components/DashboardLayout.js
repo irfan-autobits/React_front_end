@@ -34,6 +34,11 @@ const DashboardLayout = (props) => {
                 Subjects Manager
               </NavLink>
             </li>                      
+            <li>
+              <NavLink to="/location" className={({ isActive }) => (isActive ? 'active' : '')}>
+                Location Manager
+              </NavLink>
+            </li>             
           </ul>
         </nav>
       </aside>

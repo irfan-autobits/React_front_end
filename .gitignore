@@ -31,3 +31,6 @@ tree.txt
 
 *.drawio
 .env
+
+# extra code
+/src/components/infra_layout/

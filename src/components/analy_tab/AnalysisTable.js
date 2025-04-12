@@ -74,6 +74,7 @@ const AnalysisTable = () => {
             <th onClick={() => handleSort('id')}>ID</th>
             <th onClick={() => handleSort('person')}>Person Name</th>
             <th onClick={() => handleSort('camera_name')}>Camera Name</th>
+            <th onClick={() => handleSort('camera_tag')}>Camera Tag</th>
             <th onClick={() => handleSort('det_score')}>Detection Score</th>
             <th onClick={() => handleSort('distance')}>Distance from known</th>
             <th onClick={() => handleSort('timestamp')}>Timestamp</th>
@@ -86,6 +87,7 @@ const AnalysisTable = () => {
               <td>{record.id}</td>
               <td>{record.person}</td>
               <td>{record.camera_name}</td>
+              <td>{record.camera_tag}</td>
               <td>{(record.det_score).toFixed(1)}%</td>
               <td>{record.distance}</td>
               <td>{new Date(record.timestamp).toLocaleString()}</td>

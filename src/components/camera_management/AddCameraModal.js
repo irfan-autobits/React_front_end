@@ -6,6 +6,7 @@ const AddCameraModal = ({ onClose, onAddCamera }) => {
   const [mode, setMode] = useState('direct'); // 'direct' or 'construct'
   const [cameraName, setCameraName] = useState('');
   const [directUrl, setDirectUrl] = useState('');
+  const [tag, setTag] = useState(''); // New field for the tag
   // Fields for constructing URL
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -22,7 +23,7 @@ const AddCameraModal = ({ onClose, onAddCamera }) => {
       cameraUrl = `rtsp://${username}:${password}@${ip}:${port}`;
     }
     // Pass both the camera name and URL to the parent component
-    onAddCamera({ name: cameraName, url: cameraUrl });
+    onAddCamera({ name: cameraName, url: cameraUrl, tag: tag });
     // Close the modal after submission
     onClose();
   };
@@ -53,6 +54,16 @@ const AddCameraModal = ({ onClose, onAddCamera }) => {
               value={cameraName}
               onChange={(e) => setCameraName(e.target.value)}
               placeholder="Enter camera name"
+              required
+            />
+          </div>
+          <div>
+          <br/><label>Camera Tag:</label>
+            <input
+              type="text"
+              value={tag}
+              onChange={(e) => setTag(e.target.value)}
+              placeholder="Enter camera tag"
               required
             />
           </div>

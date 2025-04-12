@@ -9,6 +9,7 @@ import AnalysisTable from '../components/analy_tab/AnalysisTable';
 import StatsPage     from '../components/stats/StatsPage';
 import Tracker       from '../components/journey/Tracker';
 import SubjectMan    from '../components/admin/SubjectMan';
+// import LocationTree    from '../components/infra_layout/add_location';
 
 const publicRoutes = [
   { path: "/logout", element: <Logout /> },
@@ -24,7 +25,7 @@ const privateRoutes = [
   { path: "stats", element: <StatsPage /> },
   { path: "tracker", element: <Tracker /> },
   { path: "subjectman", element: <SubjectMan /> },
-  
+  // { path: "location", element: <LocationTree /> },
 ];
 
 export { publicRoutes, privateRoutes };
