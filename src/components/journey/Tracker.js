@@ -45,24 +45,40 @@ const Tracker = () => {
   // Generate nodes and edges for React Flow from movementHistory
   const generateNodesAndEdges = () => {
     if (!movementHistory.length) return { nodes: [], edges: [] };
+  
+    // Specify how many nodes per row (grid width)
+    const numPerRow = 5;
+    const xSpacing = 300; // horizontal spacing between nodes
+    const ySpacing = 150; // vertical spacing between rows
 
-    const nodes = movementHistory.map((entry, index) => ({
-      id: `node-${index}`,
-      type: 'custom', 
-      data: { label: `${entry.camera_tag}\n at: ${parseDate(entry.entry_time).toLocaleString()}\n Duration: ${entry.duration} s` },
-      // position: { x: index * 220, y: 100 },
-      position: { x: 100, y: index * 150 }, // x is fixed; y increases with each node
-    }));
-
+    const nodes = movementHistory.map((entry, index) => {
+      const row = Math.floor(index / numPerRow);
+      const col = index % numPerRow;
+      // For even rows (0, 2, ...): left-to-right order
+      // For odd rows (1, 3, ...): right-to-left order
+      const x = row % 2 === 0 ? col * xSpacing : (numPerRow - 1 - col) * xSpacing;
+      const y = row * ySpacing;
+      
+      return {
+        id: `node-${index}`,
+        type: 'custom',
+        data: { 
+          label: `${entry.camera_tag}\n at: ${parseDate(entry.entry_time).toLocaleString()}\n Duration: ${entry.duration} s`
+        },
+        position: { x, y },
+      };
+    });
+  
+    // Create edges connecting sequential nodes
     const edges = movementHistory.slice(1).map((entry, index) => ({
       id: `edge-${index}`,
       source: `node-${index}`,
       target: `node-${index + 1}`,
       animated: true,
     }));
-
+  
     return { nodes, edges };
-  };
+  };  
 
   const { nodes, edges } = generateNodesAndEdges();
 
@@ -75,7 +91,7 @@ const Tracker = () => {
       >
         Show Journey
       </button>
-
+      {/* Time inputs remain as-is */}
       <div style={{ marginTop: '10px' }}>
         <label>
           Start Time: 
@@ -86,7 +102,6 @@ const Tracker = () => {
             style={{ margin: '0 10px' }}
           />
         </label>
-
         <label>
           End Time: 
           <input
@@ -96,21 +111,19 @@ const Tracker = () => {
           />
         </label>
       </div>
-
       {movementHistory.length > 0 ? (
-        <div style={{ width: '100%', height: 300, border: '1px solid #ccc', marginTop: '20px' }}>
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={{ custom: CustomNode }}
-          nodesDraggable={false}
-          zoomOnScroll={false}
-          zoomOnPinch={false}
-        >
-          <Background color="#aaa" gap={16} />
-          <Controls showInteractive={false} />
-        </ReactFlow>
-
+        <div style={{ width: '100%', height: 700, border: '1px solid #ccc', marginTop: '20px' }}>
+          <ReactFlow
+            nodes={nodes}
+            edges={edges}
+            nodeTypes={{ custom: CustomNode }}
+            nodesDraggable={false}
+            zoomOnScroll={false}
+            zoomOnPinch={false}
+          >
+            <Background color="#aaa" gap={16} />
+            <Controls showInteractive={false} />
+          </ReactFlow>
         </div>
       ) : (
         <p>No journey data available.</p>
