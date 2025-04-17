@@ -9,7 +9,7 @@ const AnalysisTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortField, setSortField] = useState('');
   const [sortOrder, setSortOrder] = useState('asc');
-  const itemsPerPage = 500;
+  const itemsPerPage = 100;
 
   useEffect(() => {
     fetchData(currentPage);
@@ -17,7 +17,17 @@ const AnalysisTable = () => {
 
   const fetchData = async (page) => {
     try {
-      const response = await fetch(`${API_URL}/api/reco_table?page=${page}&limit=${itemsPerPage}`);
+      const params = new URLSearchParams();
+      params.append('page', page);
+      params.append('limit', itemsPerPage);
+      if (searchTerm) {
+        params.append('search', searchTerm);
+      }
+      if (sortField) {
+        params.append('sort_field', sortField);
+        params.append('sort_order', sortOrder);
+      }
+      const response = await fetch(`${API_URL}/api/reco_table?${params.toString()}`);
       const jsonData = await response.json();
       setData(jsonData.detections || []);
       setLoading(false);
@@ -26,6 +36,7 @@ const AnalysisTable = () => {
       setLoading(false);
     }
   };
+  
 
   const handleSort = (field) => {
     const newSortOrder = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
@@ -85,7 +96,7 @@ const AnalysisTable = () => {
           {sortedData.map((record, index) => (
             <tr key={index}>
               <td>{record.id}</td>
-              <td>{record.person}</td>
+              <td>{record.subject}</td>
               <td>{record.camera_name}</td>
               <td>{record.camera_tag}</td>
               <td>{(record.det_score).toFixed(1)}%</td>
