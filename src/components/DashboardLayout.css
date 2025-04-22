@@ -40,3 +40,24 @@
     text-decoration: underline;
   }
   
+  .sidebar nav ul li .navlink {
+    color: #ccc;
+    text-decoration: none;
+    font-size: 1rem;
+    padding: 8px 12px;
+    display: block;
+    border-radius: 6px;
+    transition: background-color 0.3s;
+  }
+  
+  .sidebar nav ul li .navlink:hover {
+    background-color: #444;
+    color: white;
+  }
+  
+  .sidebar nav ul li .navlink.active {
+    background-color: #555; /* Or something distinct */
+    color: #fff;
+    font-weight: bold;
+  }
+  

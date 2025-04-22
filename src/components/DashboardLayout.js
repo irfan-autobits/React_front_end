@@ -1,3 +1,4 @@
+// src/components/DashboardLayout.js
 // Example update in DashboardLayout.js
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
@@ -10,32 +11,32 @@ const DashboardLayout = (props) => {
         <nav>
           <ul>
             <li>
-              <NavLink to="/cameras" className={({ isActive }) => (isActive ? 'active' : '')}>
+              <NavLink to="/cameras" className={({ isActive }) => (isActive ? 'navlink active' : 'navlink')}>
                 Camera Manager
               </NavLink>
             </li>
             <li>
-              <NavLink to="/stats" className={({ isActive }) => (isActive ? 'active' : '')}>
-                Stats &amp; Insights
+              <NavLink to="/stats" className={({ isActive }) => (isActive ? 'navlink active' : 'navlink')}>
+                Stats & Insights
               </NavLink>
             </li>
             <li>
-              <NavLink to="/analysis" className={({ isActive }) => (isActive ? 'active' : '')}>
+              <NavLink to="/analysis" className={({ isActive }) => (isActive ? 'navlink active' : 'navlink')}>
                 Analysis
               </NavLink>
             </li>
             <li>
-              <NavLink to="/tracker" className={({ isActive }) => (isActive ? 'active' : '')}>
+              <NavLink to="/tracker" className={({ isActive }) => (isActive ? 'navlink active' : 'navlink')}>
                 Person Tracker
               </NavLink>
             </li>    
             <li>
-              <NavLink to="/subjectman" className={({ isActive }) => (isActive ? 'active' : '')}>
+              <NavLink to="/subjectman" className={({ isActive }) => (isActive ? 'navlink active' : 'navlink')}>
                 Subjects Manager
               </NavLink>
             </li>                      
             {/* <li>
-              <NavLink to="/location" className={({ isActive }) => (isActive ? 'active' : '')}>
+              <NavLink to="/location" className={({ isActive }) => (isActive ? 'navlink active' : 'navlink')}>
                 Location Manager
               </NavLink>
             </li>              */}

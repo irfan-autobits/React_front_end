@@ -10,6 +10,8 @@ const SubjectList = ({ refreshTrigger }) => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [showPreview, setShowPreview] = useState(false);  
   const itemsPerPage = 5; // Change as desired
 
   const fetchSubjects = () => {
@@ -93,6 +95,15 @@ const SubjectList = ({ refreshTrigger }) => {
           }}
         />
       </div>      
+      {showPreview && (
+        <div 
+          className="image-modal" 
+          onClick={() => setShowPreview(false)}
+        >
+          <img src={previewImage} alt="preview" />
+        </div>
+      )}
+
       {filteredSubjects.length === 0 ? (
         <p>No subjects available.</p>
       ) : (
@@ -121,7 +132,15 @@ const SubjectList = ({ refreshTrigger }) => {
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
                     {sub.images.map((img) => (
                       <div key={img.id} style={{ position: "relative", width: "60px", height: "60px" }}>
-                        <img src={img.url} alt="subject-img" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "4px" }} />
+                        <img 
+                          src={img.url} 
+                          alt="subject-img" 
+                          style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "4px", cursor: "pointer" }}
+                          onClick={() => {
+                            setPreviewImage(img.url);
+                            setShowPreview(true);
+                          }}
+                        />
                         <button
                           onClick={() => handleDeleteImage(img.id)}
                           title="Remove Image"

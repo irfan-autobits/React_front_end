@@ -1,12 +1,167 @@
 // src/components/StatsPage.js
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import './StatsPage.css';
+import {
+  LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
+  BarChart, Bar, Legend, ResponsiveContainer
+} from "recharts";
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
+
+import { BarChartBig, User, Camera, Clock } from "lucide-react";
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 const StatsPage = () => {
   console.log("StatsPage rendered");
+  const [sysstats, setSysStats] = useState({
+    model: '',
+    total_subjects: 0,
+    total_cameras: 0,
+    total_detections: 0,
+    avg_response_time: 0,
+    subjects: []
+  });
+  const [dayData, setDayData] = useState([]);
+  const [camData, setCamData] = useState([]);
+  const [subData, setSubData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  useEffect(() => {
+    setLoading(true);
+    Promise.all([
+      fetch(`${API_URL}/api/system_stats`).then(r => r.json()),
+      fetch(`${API_URL}/api/detections_stats`).then(r => r.json())
+    ])
+    .then(([sys, det]) => {
+      console.log("Sys:", sys, "Det:", det);
+      setSysStats(sys);
+      setDayData(det.day_stats);
+      setCamData(det.camera_stats);
+      setSubData(det.subject_stats);
+    })
+    .catch(e => setError(e.message))
+    .finally(() => setLoading(false));
+  }, []);
+  
+  if (loading) return <div>Loading stats…</div>;
+  if (error)   return <div className="text-red-500">Error: {error}</div>;
+  
   return (
-    <div className="stats-page">
-      <h2>Stats &amp; Insights</h2>
-      <p>This is the stats page.</p>
+  <div>
+    <div className="stats-page p-6 bg-muted min-h-screen">
+      <h1 className="text-3xl font-bold mb-6">Stats & Insights</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardHeader className="flex items-center gap-3">
+              <Camera className="text-primary" />
+              <CardTitle>Model Used</CardTitle>
+            </CardHeader>
+            <CardContent className="text-2xl font-semibold text-foreground">
+              {sysstats.model || '–'}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex items-center gap-3">
+              <User className="text-primary" />
+              <CardTitle>Total Subjects</CardTitle>
+            </CardHeader>
+            <CardContent className="text-2xl font-semibold text-foreground">
+              {sysstats.total_subjects}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex items-center gap-3">
+              <BarChartBig className="text-primary" />
+              <CardTitle>Total Detections</CardTitle>
+            </CardHeader>
+            <CardContent className="text-2xl font-semibold text-foreground">
+              {sysstats.total_detections}
+            </CardContent>
+          </Card>
+
+          {/* If you really want four cards, either add a new metric in your API
+              or repurpose this slot (e.g. count of returned subjects): */}
+          <Card>
+            <CardHeader className="flex items-center gap-3">
+              <Clock className="text-primary" />
+              <CardTitle>Subjects Listed</CardTitle>
+            </CardHeader>
+            <CardContent className="text-2xl font-semibold text-foreground">
+              {sysstats.subjects.length}
+            </CardContent>
+          </Card>
+        </div>
+
+      <div className="bg-background rounded-2xl p-6 shadow-md">
+        <h2 className="text-xl font-semibold mb-4 text-foreground">Activity Overview</h2>
+        {/* Add graph or table here */}
+        <div className="text-muted-foreground">
+        <div>
+          <h2>Day‑wise Detections</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={dayData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Line type="monotone" dataKey="count" />
+            </LineChart>
+          </ResponsiveContainer>
+
+          <h2>Camera‑wise Detections</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={camData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="camera" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="count" />
+            </BarChart>
+          </ResponsiveContainer>
+
+          <h2>Subject‑wise Detections</h2>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={subData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="subject" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="count" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>      
+          {sysstats.subjects && sysstats.subjects.length > 0 && (
+            <table>
+              <thead>
+                <tr>
+                  {/* <th>Subject ID</th> */}
+                  <th>Subject Name</th>
+                  <th>Image Count</th>
+                  <th>Embedding Count</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sysstats.subjects.map((subject) => (
+                  <tr key={subject.subject_id}>
+                    {/* <td>{subject.subject_id}</td> */}
+                    <td>{subject.subject_name}</td>
+                    <td>{subject.image_count}</td>
+                    <td>{subject.embedding_count}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+      
     </div>
   );
 };
