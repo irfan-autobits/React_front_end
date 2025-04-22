@@ -113,6 +113,38 @@ const CameraManager = () => {
     }
   };
   
+  const handleStartAllCamera = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/start_all_proc`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" }
+      });
+      // Optionally, log or inspect the response:
+      const data = await response.json();
+      console.log("Start all response:", data);
+      // After start, re-fetch the camera list to update statuses.
+      fetchCameras();
+    } catch (error) {
+      console.error("Error starting cameras:", error);
+    }
+  };
+
+  const handleStopAllCamera = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/stop_all_proc`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" }
+      });
+      // Optionally, log or inspect the response:
+      const data = await response.json();
+      console.log("Stop all response:", data);
+      // After start, re-fetch the camera list to update statuses.
+      fetchCameras();
+    } catch (error) {
+      console.error("Error stopping cameras:", error);
+    }
+  };
+
   const handleStopCamera = async (cameraName) => {
     try {
       await fetch(`${API_URL}/api/stop_proc`, {
@@ -178,6 +210,8 @@ const CameraManager = () => {
         />
       )}
       <button onClick={() => handleRestartAllCamera()}>Restart all Camera</button>
+      <button onClick={() => handleStartAllCamera()}>Start all Camera</button>
+      <button onClick={() => handleStopAllCamera()}>Stop all Camera</button>
 
       <div className="camera-list">
         {cameraList.map((cam) => (
