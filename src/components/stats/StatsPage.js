@@ -1,13 +1,26 @@
 // src/components/StatsPage.js
-import React, { useState, useEffect } from 'react';
-import './StatsPage.css';
+import React, { useState, useEffect } from "react";
+import "./StatsPage.css";
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
-  BarChart, Bar, Legend, ResponsiveContainer
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+  BarChart,
+  Bar,
+  Legend,
+  ResponsiveContainer,
 } from "recharts";
 // import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Card, CardContent, CardHeader, CardTitle } from "../../components/ui/card";
-
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../../components/ui/card";
+import GanttChart from '../../components/ui/GanttChart';
 import { BarChartBig, User, Camera, Clock } from "lucide-react";
 
 const API_URL = process.env.REACT_APP_API_URL;
@@ -15,51 +28,56 @@ const API_URL = process.env.REACT_APP_API_URL;
 const StatsPage = () => {
   console.log("StatsPage rendered");
   const [sysstats, setSysStats] = useState({
-    model: '',
+    model: "",
     total_subjects: 0,
     total_cameras: 0,
     total_detections: 0,
     avg_response_time: 0,
-    subjects: []
+    subjects: [],
   });
   const [dayData, setDayData] = useState([]);
   const [camData, setCamData] = useState([]);
   const [subData, setSubData] = useState([]);
+  const [camTmln, setCamTmln] = useState([]);
+  const [camRange, setCamRange] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      fetch(`${API_URL}/api/system_stats`).then(r => r.json()),
-      fetch(`${API_URL}/api/detections_stats`).then(r => r.json())
+      fetch(`${API_URL}/api/system_stats`).then((r) => r.json()),
+      fetch(`${API_URL}/api/detections_stats`).then((r) => r.json()),
+      fetch(`${API_URL}/camera_timeline`).then((r) => r.json()),
     ])
-    .then(([sys, det]) => {
-      console.log("Sys:", sys, "Det:", det);
-      setSysStats(sys);
-      setDayData(det.day_stats);
-      setCamData(det.camera_stats);
-      setSubData(det.subject_stats);
-    })
-    .catch(e => setError(e.message))
-    .finally(() => setLoading(false));
+      .then(([sys, det, camtl]) => {
+        console.log("Sys:", sys, "Det:", det, "CamTimeLine:", camtl);
+        setSysStats(sys);
+        setDayData(det.day_stats);
+        setCamData(det.camera_stats);
+        setSubData(det.subject_stats);
+        setCamTmln(camtl.camData);
+        setCamRange(camtl.range);
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
   }, []);
   
   if (loading) return <div>Loading stats…</div>;
-  if (error)   return <div className="text-red-500">Error: {error}</div>;
-  
+  if (error) return <div className="text-red-500">Error: {error}</div>;
+
   return (
-  <div>
-    <div className="stats-page p-6 bg-muted min-h-screen">
-      <h1 className="text-3xl font-bold mb-6">Stats & Insights</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div>
+      <div className="stats-page p-6 bg-muted min-h-screen">
+        <h1 className="text-3xl font-bold mb-6">Stats & Insights</h1>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex items-center gap-3">
               <Camera className="text-primary" />
               <CardTitle>Model Used</CardTitle>
             </CardHeader>
             <CardContent className="text-2xl font-semibold text-foreground">
-              {sysstats.model || '–'}
+              {sysstats.model || "–"}
             </CardContent>
           </Card>
 
@@ -96,72 +114,106 @@ const StatsPage = () => {
           </Card>
         </div>
 
-      <div className="bg-background rounded-2xl p-6 shadow-md">
-        <h2 className="text-xl font-semibold mb-4 text-foreground">Activity Overview</h2>
-        {/* Add graph or table here */}
-        <div className="text-muted-foreground">
-        <div>
-          <h2>Day‑wise Detections</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={dayData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="count" />
-            </LineChart>
-          </ResponsiveContainer>
+        <div className="bg-background rounded-2xl p-6 shadow-md">
+          <h2 className="text-xl font-semibold mb-4 text-foreground">
+            Activity Overview
+          </h2>
+          {/* Add graph or table here */}
+          <div className="text-muted-foreground">
+            <div>
+              <h2>Day‑wise Detections</h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={dayData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="date" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="count" />
+                </LineChart>
+              </ResponsiveContainer>
 
-          <h2>Camera‑wise Detections</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={camData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="camera" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="count" />
-            </BarChart>
-          </ResponsiveContainer>
+              <h2>Camera‑wise Detections</h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={camData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="camera" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="count" />
+                </BarChart>
+              </ResponsiveContainer>
 
-          <h2>Subject‑wise Detections</h2>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={subData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="subject" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="count" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>      
-          {sysstats.subjects && sysstats.subjects.length > 0 && (
-            <table>
-              <thead>
-                <tr>
-                  {/* <th>Subject ID</th> */}
-                  <th>Subject Name</th>
-                  <th>Image Count</th>
-                  <th>Embedding Count</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sysstats.subjects.map((subject) => (
-                  <tr key={subject.subject_id}>
-                    {/* <td>{subject.subject_id}</td> */}
-                    <td>{subject.subject_name}</td>
-                    <td>{subject.image_count}</td>
-                    <td>{subject.embedding_count}</td>
+              <h2>Subject‑wise Detections</h2>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={subData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="subject" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="count" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="gantt-container">
+
+            <GanttChart
+                title="Camera / Feed Timeline"
+                categories={camTmln.map(c => c.camera)}
+                tasks={camTmln.flatMap(cam =>
+                  // activePeriods ⇒ big blue bars
+                  cam.activePeriods.map(p => ({
+                    camera: cam.camera,
+                    name:   'Camera On',
+                    start:  p.start,
+                    end:    p.end,
+                    type:   'camera'
+                  }))
+                  .concat(
+                    // feeds ⇒ smaller green bars
+                    cam.feeds.map(f => ({
+                      camera: cam.camera,
+                      name:   'Feed',
+                      start:  f.start,
+                      end:    f.end,
+                      type:   'feed'
+                    }))
+                  )
+                )}
+                range={camRange}
+              />
+              </div>
+            {sysstats.subjects && sysstats.subjects.length > 0 && (
+
+              <table>
+                <thead>
+                  <tr>
+                    {/* <th>Subject ID</th> */}
+                    <th>Subject Name</th>
+                    <th>Image Count</th>
+                    <th>Embedding Count</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+                </thead>
+                <tbody>
+                  {sysstats.subjects.map((subject) => (
+                    <tr key={subject.subject_id}>
+                      {/* <td>{subject.subject_id}</td> */}
+                      <td>{subject.subject_name}</td>
+                      <td>{subject.image_count}</td>
+                      <td>{subject.embedding_count}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          {/* text muted div close */}
+          </div>
+        {/* activity overview div close */}
         </div>
+      {/* full page div close */}
       </div>
-    </div>
-      
+    {/* main div close */}
     </div>
   );
 };
