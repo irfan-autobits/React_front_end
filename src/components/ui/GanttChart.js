@@ -19,7 +19,7 @@ export default function GanttChart({ title, categories, tasks, range }) {
   // 2️⃣ Build chart options
   const options = {
     chart: {
-      height: (categories.length * 100 )+ 100,  // auto-height per row
+      height: (categories.length * 65 )+ 100,  // auto-height per row
     },
     title: { text: title, align: 'left' },
     xAxis: {

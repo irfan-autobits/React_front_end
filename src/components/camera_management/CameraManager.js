@@ -1,259 +1,146 @@
-// src/components/CameraManager.js
+// src/components/camera_management/CameraManager.js
 import React, { useState, useEffect } from "react";
 import "./CameraManager.css";
 import AddCameraModal from "./AddCameraModal";
 import { GreenIndicator, RedIndicator } from "./IndicatorComponents";
 import symbolicCameraImg from "../../assets/camshutter.png";
 import LiveFeed from "./LiveFeed";
-import { io } from "socket.io-client";
+import socket from "../../socket";
 const API_URL = process.env.REACT_APP_API_URL;
 
 const CameraManager = () => {
-  const [cameraList, setCameraList] = useState([]);
-  const [camEnabled, setCamEnabled] = useState({});
+  const [cameraList,  setCameraList]  = useState([]);
+  const [camEnabled,  setCamEnabled]  = useState({});
   const [isModalVisible, setModalVisible] = useState(false);
-  const [activeCameraName, setActiveCameraName] = useState(
-    localStorage.getItem("activeCamera") || null
-  );
-  const [cameraFeeds, setCameraFeeds] = useState({});
-
-  // Socket connection and initial fetch
+  const [activeCameraName, setActiveCameraName] = useState(null);
+  const [cameraFeeds,  setCameraFeeds]  = useState({});
+  // ─── fetch cameras & socket handlers ───────────────────────────────────
   useEffect(() => {
-    console.log("CameraManager mounted");
     fetchCameras();
-
-    const socket = io();
-    socket.on("frame", ({ camera_name, status, image }) => {
-      setCameraFeeds((prev) => ({
-        ...prev,
-        [camera_name]: { status, image },
-      }));
+    socket.on("connect",         () => console.log("socket connected"));
+    socket.on("feed_started",    ({ camera_name }) => {
+      console.log("feed started for", camera_name);
+      setActiveCameraName(camera_name);
+    });
+    socket.on("feed_stopped",    ({ camera_name }) => {
+      console.log("feed stopped for", camera_name);
+      setActiveCameraName(prev => prev === camera_name ? null : prev);
     });
 
-    return () => socket.disconnect();
+    socket.on("frame-bin", payload => {
+      console.log("🔴 front-end got frame-bin:", payload.camera_name, payload.image);
+      // now you get one “payload” object with two fields
+      const { camera_name, image } = payload;
+      console.log("got frame-bin:", camera_name, image);
+      const blob = new Blob([image], { type: "image/jpeg" });
+      const url  = URL.createObjectURL(blob);
+      setCameraFeeds(prev => {
+        prev[camera_name]?._url && URL.revokeObjectURL(prev[camera_name]._url);
+        return { 
+          ...prev,
+          [camera_name]: { imageUrl: url, _url: url }
+        };
+      });
+    });
+
+    return () => {
+      socket.off("feed_started");
+      socket.off("feed_stopped");      
+      socket.off("frame-bin");
+    };
   }, []);
 
-  // Fetch cameras from backend
   const fetchCameras = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/camera_list`);
-      const data = await response.json();
-      setCameraList(data.cameras || []);
-      const initialEnabled = {};
-      data.cameras.forEach((cam) => {
-        initialEnabled[cam.camera_name] = cam.status; // true if processing
-      });
-      console.log("processing camera list : ", initialEnabled);
-      setCamEnabled(initialEnabled);
-    } catch (error) {
-      console.error("Error fetching cameras:", error);
-    }
+      const res = await fetch(`${API_URL}/api/camera_list`);
+      const { cameras } = await res.json();
+      setCameraList(cameras);
+      const init = {};
+      cameras.forEach(c => { init[c.camera_name] = c.status; });
+      setCamEnabled(init);
+    } catch (e) { console.error(e) }
   };
 
-  // Add a new camera
-  const handleAddCamera = ({ name, url, tag}) => {
-    if (!name || !url) {
-      alert("Please fill in all fields");
-      return;
-    }
-    fetch(`${API_URL}/api/add_camera`, {
+  // ─── camera control helpers ────────────────────────────────────────────
+  const post = (url, body) =>
+    fetch(`${API_URL}${url}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ camera_name: name, camera_url: url , tag: tag}),
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        console.log("Camera added:", data);
-        fetchCameras();
-      })
-      .catch((error) => console.error("Error adding camera:", error));
-  };
+      body: JSON.stringify(body),
+    });
 
-  // Remove a camera
-  const handleRemoveCamera = async (cameraName) => {
-    try {
-      await fetch(`${API_URL}/api/remove_camera`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ camera_name: cameraName }),
-      });
+  const handleAddCamera = data => {
+    post("/api/add_camera", data).then(fetchCameras);
+  };
+  const handleRemoveCamera = name => {
+    post("/api/remove_camera", { camera_name: name }).then(fetchCameras);
+  };
+  const handleStartCamera = name => {
+    post("/api/start_proc", { camera_name: name })
+      .then(() => setCamEnabled(e => ({ ...e, [name]: true })));
+  };
+  const handleStopCamera = name => {
+    post("/api/stop_proc", { camera_name: name })
+      .then(() => setCamEnabled(e => ({ ...e, [name]: false })));
+  };
+  const handleStartAllCamera = () =>
+    fetch(`${API_URL}/api/start_all_proc`).then(fetchCameras);
+  const handleStopAllCamera = () =>
+    fetch(`${API_URL}/api/stop_all_proc`).then(fetchCameras);
+  const handleRestartAllCamera = () =>
+    fetch(`${API_URL}/api/restart_all_proc`).then(fetchCameras);
+
+  const handleOpenFeed = name => {
+    post("/api/start_feed", { camera_name: name }).then(() => {
       fetchCameras();
-    } catch (error) {
-      console.error("Error removing camera:", error);
-    }
-  };
-
-  // Start/stop processing (for status indicator)
-  const handleStartCamera = async (cameraName) => {
-    try {
-      await fetch(`${API_URL}/api/start_proc`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ camera_name: cameraName }),
-      });
-      setCamEnabled((prev) => ({ ...prev, [cameraName]: true }));
-    } catch (error) {
-      console.error("Error starting camera:", error);
-    }
-  };
-
-  const handleRestartAllCamera = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/restart_all_proc`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" }
-      });
-      // Optionally, log or inspect the response:
-      const data = await response.json();
-      console.log("Restart all response:", data);
-      // After restart, re-fetch the camera list to update statuses.
-      fetchCameras();
-    } catch (error) {
-      console.error("Error restarting cameras:", error);
-    }
+      setActiveCameraName(name); // 🛠️ Tell React to show feed
+    });
   };
   
-  const handleStartAllCamera = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/start_all_proc`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" }
-      });
-      // Optionally, log or inspect the response:
-      const data = await response.json();
-      console.log("Start all response:", data);
-      // After start, re-fetch the camera list to update statuses.
+  const handleCloseFeed = name => {
+    post("/api/stop_feed", { camera_name: name }).then(() => {
       fetchCameras();
-    } catch (error) {
-      console.error("Error starting cameras:", error);
-    }
-  };
-
-  const handleStopAllCamera = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/stop_all_proc`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" }
-      });
-      // Optionally, log or inspect the response:
-      const data = await response.json();
-      console.log("Stop all response:", data);
-      // After start, re-fetch the camera list to update statuses.
-      fetchCameras();
-    } catch (error) {
-      console.error("Error stopping cameras:", error);
-    }
-  };
-
-  const handleStopCamera = async (cameraName) => {
-    try {
-      await fetch(`${API_URL}/api/stop_proc`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ camera_name: cameraName }),
-      });
-      setCamEnabled((prev) => ({ ...prev, [cameraName]: false }));
-    } catch (error) {
-      console.error("Error stopping camera:", error);
-    }
-  };
-
-  // Feed control functions
-  const handleOpenFeed = async (cameraName) => {
-    try {
-      await fetch(`${API_URL}/api/start_feed`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ camera_name: cameraName }),
-      });
-      localStorage.setItem("activeCamera", cameraName);
-      setActiveCameraName(cameraName);
-      fetchCameras();
-    } catch (error) {
-      console.error("Error opening feed:", error);
-    }
-  };
-
-  const handleCloseFeed = async (cameraName) => {
-    try {
-      await fetch(`${API_URL}/api/stop_feed`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ camera_name: cameraName }),
-      });
-      if (activeCameraName === cameraName) {
-        setActiveCameraName(null);
-        localStorage.removeItem("activeCamera");
-      }
-      fetchCameras();
-    } catch (error) {
-      console.error("Error closing feed:", error);
-    }
-  };
-
-  // Fullscreen handler for feed image
-  const handleFullscreen = (cameraName) => {
-    const imgElement = document.getElementById("feed_" + cameraName);
-    if (imgElement?.requestFullscreen) {
-      imgElement.requestFullscreen();
-    }
-  };
+      setActiveCameraName(name);
+    });
+  }
+    
 
   return (
     <div className="camera-manager">
       <h2>Camera Management (Status View)</h2>
       <button onClick={() => setModalVisible(true)}>Add Camera</button>
+      <button onClick={handleRestartAllCamera}>Restart all</button>
+      <button onClick={handleStartAllCamera}>Start all</button>
+      <button onClick={handleStopAllCamera}>Stop all</button>
+
       {isModalVisible && (
         <AddCameraModal
           onClose={() => setModalVisible(false)}
           onAddCamera={handleAddCamera}
         />
       )}
-      <button onClick={() => handleRestartAllCamera()}>Restart all Camera</button>
-      <button onClick={() => handleStartAllCamera()}>Start all Camera</button>
-      <button onClick={() => handleStopAllCamera()}>Stop all Camera</button>
 
       <div className="camera-list">
-        {cameraList.map((cam) => (
+        {cameraList.map(cam => (
           <div key={cam.camera_name} className="camera-item">
-            <img
-              src={symbolicCameraImg}
-              alt="Camera Icon"
-              className="feed-img"
-            />
+            <img src={symbolicCameraImg} alt="" className="feed-img"/>
             <span>{cam.camera_name}</span>
-            {camEnabled[cam.camera_name] ? (
-              <GreenIndicator />
-            ) : (
-              <RedIndicator />
-            )}
-            <button onClick={() => handleStartCamera(cam.camera_name)}>
-              Start Cam
-            </button>
-            <button onClick={() => handleStopCamera(cam.camera_name)}>
-              Stop Cam
-            </button>
-            {activeCameraName === cam.camera_name ? (
-              <button onClick={() => handleCloseFeed(cam.camera_name)}>
-                Close Feed
-              </button>
-            ) : (
-              <button onClick={() => handleOpenFeed(cam.camera_name)}>
-                Open Feed
-              </button>
-            )}
-            <button onClick={() => handleRemoveCamera(cam.camera_name)}>
-              Remove
-            </button>
+            {camEnabled[cam.camera_name] ? <GreenIndicator/> : <RedIndicator/>}
+            <button onClick={()=>handleStartCamera(cam.camera_name)}>Start Cam</button>
+            <button onClick={()=>handleStopCamera(cam.camera_name)}>Stop Cam</button>
+            {activeCameraName === cam.camera_name
+              ? <button onClick={()=>handleCloseFeed(cam.camera_name)}>Close Feed</button>
+              : <button onClick={()=>handleOpenFeed(cam.camera_name)}>Open Feed</button>
+            }
+            <button onClick={()=>handleRemoveCamera(cam.camera_name)}>Remove</button>
           </div>
         ))}
       </div>
 
       <LiveFeed
         activeCameraName={activeCameraName}
-        handleCloseFeed={handleCloseFeed}
         cameraFeeds={cameraFeeds}
-        handleFullscreen={handleFullscreen}
+        onClose={handleCloseFeed}
       />
     </div>
   );
