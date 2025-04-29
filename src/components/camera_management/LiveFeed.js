@@ -1,3 +1,4 @@
+// src/components/camera_management/LiveFeed.js
 import React, { useRef } from "react";
 
 export default function LiveFeed({ activeCameraName, cameraFeeds, onClose }) {
