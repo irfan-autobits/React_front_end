@@ -23,7 +23,7 @@ export default function CameraManager() {
       fetch(`${API_URL}/api/active_feed`)
         .then(r => r.json())
         .then(j => j.active_camera),
-    refetchInterval: 1000,
+    refetchInterval: 5000,
   });
 
   // 2️⃣ One-time fetch of camera list
@@ -71,7 +71,7 @@ export default function CameraManager() {
     });
 
   // Camera controls
-  const handleAddCamera = data => post("/api/add_camera", data).then(fetchCameras);
+  const handleAddCamera = (data) => {post("/api/add_camera", data).then(fetchCameras);}
   const handleRemoveCamera = name => post("/api/remove_camera", { camera_name: name }).then(fetchCameras);
   const handleStartCamera = name => post("/api/start_proc", { camera_name: name }).then(() => setCamEnabled(p => ({ ...p, [name]: true })));
   const handleStopCamera  = name => post("/api/stop_proc",  { camera_name: name }).then(() => setCamEnabled(p => ({ ...p, [name]: false })));

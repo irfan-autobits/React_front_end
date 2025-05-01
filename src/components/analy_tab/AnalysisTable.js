@@ -1,5 +1,7 @@
 // src/components/AnalysisTable.js
 import React, { useState, useEffect } from 'react';
+import Cell from "./cell";
+import { parseTimestamp, formatTimestamp } from '../utils/time';
 const API_URL = process.env.REACT_APP_API_URL;
 
 const AnalysisTable = () => {
@@ -101,7 +103,18 @@ const AnalysisTable = () => {
               <td>{record.camera_tag}</td>
               <td>{(record.det_score).toFixed(1)}%</td>
               <td>{record.distance}</td>
-              <td>{new Date(record.timestamp).toLocaleString()}</td>
+              <td>
+                {/*
+                  If you’re using your <Cell> helper, pass it the raw timestamp.
+                  Otherwise, you can inline:
+                */}
+                <Cell ts={record.timestamp} />
+                {/*
+                  or, if you prefer inline without <Cell>:
+                  formatTimestamp(parseTimestamp(record.timestamp))
+                */}
+              </td>
+
               <td>
                 <img src={record.det_face} alt="Detected Face" width="50" height="50" />
               </td>

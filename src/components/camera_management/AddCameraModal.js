@@ -23,7 +23,7 @@ const AddCameraModal = ({ onClose, onAddCamera }) => {
       cameraUrl = `rtsp://${username}:${password}@${ip}:${port}`;
     }
     // Pass both the camera name and URL to the parent component
-    onAddCamera({ name: cameraName, url: cameraUrl, tag: tag });
+    onAddCamera({ camera_name: cameraName, camera_url: cameraUrl, tag: tag });
     // Close the modal after submission
     onClose();
   };

@@ -3,6 +3,7 @@ import PersonSelector from './ListPerson';
 import ReactFlow, { Background, Controls } from 'reactflow';
 import 'reactflow/dist/style.css';
 import CustomNode from './CustomNode';
+import { localToUtcIso, parseTimestamp, formatTimestamp } from '../utils/time';
 const API_URL = process.env.REACT_APP_API_URL;
 
 const Tracker = () => {
@@ -20,16 +21,18 @@ const Tracker = () => {
     if (!personName) return;
   
     try {
-      const response = await fetch(`${API_URL}/api/movement/${encodeURIComponent(personName)}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          start_time: startTime,
-          end_time: endTime,
-        }),
-      });
+      const response = await fetch(
+        `${API_URL}/api/movement/${encodeURIComponent(personName)}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            // convert local inputs into full UTC ISO strings:
+            start_time: localToUtcIso(startTime),
+            end_time:   localToUtcIso(endTime),
+          }),
+        }
+      );
   
       const data = await response.json();
       console.log("API response:", data);
@@ -59,11 +62,12 @@ const Tracker = () => {
       const x = row % 2 === 0 ? col * xSpacing : (numPerRow - 1 - col) * xSpacing;
       const y = row * ySpacing;
       
-      return {
+    const date = parseTimestamp(entry.entry_time); // entry_time is ISO with offset
+    return {
         id: `node-${index}`,
         type: 'custom',
         data: { 
-          label: `${entry.camera_tag}\n at: ${parseDate(entry.entry_time).toLocaleString()}\n Duration: ${entry.duration} s`
+          label: `${entry.camera_tag}\n at: ${formatTimestamp(date)}\n Duration: ${entry.duration}`
         },
         position: { x, y },
       };

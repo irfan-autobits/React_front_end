@@ -22,7 +22,7 @@ import {
 } from "../../components/ui/card";
 import GanttChart from '../../components/ui/GanttChart';
 import { BarChartBig, User, Camera, Clock } from "lucide-react";
-
+import { parseTimestamp, formatTimestamp } from "../utils/time";
 const API_URL = process.env.REACT_APP_API_URL;
 
 const StatsPage = () => {
@@ -123,13 +123,19 @@ const StatsPage = () => {
             <div>
               <h2>Day‑wise Detections</h2>
               <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={dayData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="count" />
-                </LineChart>
+              <LineChart data={dayData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                {/* format each tick via your util */}
+                <XAxis 
+                  dataKey="date"
+                  tickFormatter={ts => formatTimestamp(parseTimestamp(ts))}
+                />
+                <YAxis />
+                <Tooltip 
+                  labelFormatter={ts => formatTimestamp(parseTimestamp(ts))}
+                />
+                <Line type="monotone" dataKey="count" />
+              </LineChart>
               </ResponsiveContainer>
 
               <h2>Camera‑wise Detections</h2>
@@ -175,12 +181,15 @@ const StatsPage = () => {
                     cam.feeds.map(f => ({
                       camera: cam.camera,
                       name:   'Feed',
+                      // you can leave them as ISO strings, assuming GanttChart parses them
                       start:  f.start,
                       end:    f.end,
                       type:   'feed'
                     }))
                   )
-                )}
+              )}
+                // If your GanttChart wants Date objects instead of ISO, you could do:
+                // range={[ parseTimestamp(camRange.min), parseTimestamp(camRange.max) ]}
                 range={camRange}
               />
               </div>

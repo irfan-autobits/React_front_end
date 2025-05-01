@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import './SubjectList.css';
 import BasicButtons from "../ui/MuiButton";
 import UploadSingleImage from './AddImg';
+import { parseTimestamp, formatTimestamp } from '../utils/time';
 const API_URL = process.env.REACT_APP_API_URL;
 
 const SubjectList = ({ refreshTrigger }) => {
@@ -176,7 +177,9 @@ const SubjectList = ({ refreshTrigger }) => {
               <td>{sub.email || "N/A"}</td>
               <td>{sub.phone || "N/A"}</td>
               <td>{sub.aadhar || "N/A"}</td>
-              <td>{new Date(sub.added_date).toLocaleString()}</td>
+              <td>
+                {formatTimestamp(parseTimestamp(sub.added_date))}
+              </td>
               <td>
                 <button onClick={() => handleRemove(sub.id)}>Remove</button>
               </td>
