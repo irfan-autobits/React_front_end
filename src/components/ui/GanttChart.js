@@ -1,31 +1,39 @@
-// src/components/ui/GanttChart.js
-import React from 'react';
-import Highcharts from 'highcharts/highcharts-gantt';       // Bundled Gantt build
+import React, { useEffect } from 'react';
+import Highcharts from 'highcharts/highcharts-gantt';
 import HighchartsReact from 'highcharts-react-official';
 
 export default function GanttChart({ title, categories, tasks, range }) {
-  
-  console.log({ categories, tasks });
+  // ① Turn off UTC so chart uses client’s local TZ
+  useEffect(() => {
+    Highcharts.setOptions({
+      time: { useUTC: false }
+    });
+  }, []);
 
-  // 1️⃣ Convert ISO strings to ms timestamps
-  const seriesData = tasks.map(t => ({
-    name:  t.name,
-    start: Date.parse(t.start),
-    end:   Date.parse(t.end),
-    y:     categories.indexOf(t.camera),
-    color: t.type === 'feed' ? 'green' : 'blue'
-  }));
+  // ② Build series data with millisecond timestamps
+  const seriesData = tasks.map(t => {
+    const startMs = Date.parse(t.start);
+    const endMs   = Date.parse(t.end);
+    return {
+      name:  t.name,
+      start: startMs,
+      end:   endMs,
+      y:     categories.indexOf(t.camera),
+      color: t.type === 'feed' ? 'green' : 'blue'
+    };
+  });
 
-  // 2️⃣ Build chart options
+  // ③ Chart options
   const options = {
     chart: {
-      height: (categories.length * 65 )+ 100,  // auto-height per row
+      type: 'gantt',
+      height: (categories.length * 65) + 100
     },
     title: { text: title, align: 'left' },
     xAxis: {
       type: 'datetime',
-      min: Date.parse(range.min),
-      max: Date.parse(range.max),
+      min: Date.parse(range.min),  // ms
+      max: Date.parse(range.max),  // ms
     },
     yAxis: {
       categories,
@@ -35,19 +43,16 @@ export default function GanttChart({ title, categories, tasks, range }) {
     series: [{
       name: title,
       data: seriesData,
-      dataLabels: {
-        enabled: true,
-        format: '{point.name}'
-      }
+      dataLabels: { enabled: true, format: '{point.name}' }
     }],
     tooltip: {
       pointFormatter() {
-        const fmtDate = d => Highcharts.dateFormat('%Y-%m-%d %H:%M', d);
-        return `<b>${this.name}</b><br/>${fmtDate(this.start)} – ${fmtDate(this.end)}`;
+        const fmt = d => Highcharts.dateFormat('%Y-%m-%d %H:%M', d);
+        return `<b>${this.name}</b><br/>${fmt(this.start)} → ${fmt(this.end)}`;
       }
     },
-    navigator: { enabled: true },    // optional: mini-map below
-    scrollbar: { enabled: true },    // optional: scroll if wide
+    navigator: { enabled: true },  // built-in navigator
+    scrollbar: { enabled: true }   // built-in scrollbar
   };
 
   return (

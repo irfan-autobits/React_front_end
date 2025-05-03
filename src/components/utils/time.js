@@ -1,12 +1,12 @@
 // src/utils/time.js
-export function parseTimestamp(ts) {
-  // Accept ISO Z strings or epoch ms numbers
-  return typeof ts === "number" ? new Date(ts) : new Date(ts);
-}
+// export function parseTimestamp(ts) {
+//   // Accept ISO Z strings or epoch ms numbers
+//   return typeof ts === "number" ? new Date(ts) : new Date(ts);
+// }
 
-export function formatTimestamp(date, opts) {
-  return date.toLocaleString(undefined, opts);
-}
+// export function formatTimestamp(date, opts) {
+//   return date.toLocaleString(undefined, opts);
+// }
 
 export function formatShort(date) {
   return date.toLocaleString(undefined, {
@@ -24,3 +24,16 @@ export function localToUtcIso(localStr) {
   return new Date(localStr).toISOString();
 }
 
+export function parseTimestamp(isoString) {
+  return new Date(isoString);  // Automatically parses UTC ISO as local time
+}
+
+export function formatTimestamp(date) {
+  return date.toLocaleString(undefined, {  // Browser's locale settings
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}

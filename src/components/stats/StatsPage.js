@@ -128,11 +128,11 @@ const StatsPage = () => {
                 {/* format each tick via your util */}
                 <XAxis 
                   dataKey="date"
-                  tickFormatter={ts => formatTimestamp(parseTimestamp(ts))}
+                  tickFormatter={ts => formatTimestamp(new Date(ts))}  // Direct conversion
                 />
                 <YAxis />
                 <Tooltip 
-                  labelFormatter={ts => formatTimestamp(parseTimestamp(ts))}
+                  labelFormatter={ts => formatTimestamp(new Date(ts))}
                 />
                 <Line type="monotone" dataKey="count" />
               </LineChart>
@@ -172,8 +172,8 @@ const StatsPage = () => {
                   cam.activePeriods.map(p => ({
                     camera: cam.camera,
                     name:   'Camera On',
-                    start:  p.start,
-                    end:    p.end,
+                    start:  new Date(p.start),
+                    end:    new Date(p.end),
                     type:   'camera'
                   }))
                   .concat(
@@ -182,16 +182,19 @@ const StatsPage = () => {
                       camera: cam.camera,
                       name:   'Feed',
                       // you can leave them as ISO strings, assuming GanttChart parses them
-                      start:  f.start,
-                      end:    f.end,
+                      start:  new Date(f.start),
+                      end:    new Date(f.end),
                       type:   'feed'
                     }))
                   )
               )}
                 // If your GanttChart wants Date objects instead of ISO, you could do:
                 // range={[ parseTimestamp(camRange.min), parseTimestamp(camRange.max) ]}
-                range={camRange}
-              />
+              range={{
+                min: camRange.min,   // ISO, e.g. "2025-05-03T05:30:00Z"
+                max: camRange.max
+              }}
+              />  
               </div>
             {sysstats.subjects && sysstats.subjects.length > 0 && (
 
