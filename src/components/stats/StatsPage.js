@@ -21,7 +21,7 @@ import {
   CardTitle,
 } from "../../components/ui/card";
 import GanttChart from '../../components/ui/GanttChart';
-import { BarChartBig, User, Camera, Clock } from "lucide-react";
+import { BarChartBig, User, Camera, Clock, Cpu} from "lucide-react";
 import { parseTimestamp, formatTimestamp } from "../utils/time";
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -42,13 +42,21 @@ const StatsPage = () => {
   const [camRange, setCamRange] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
+  // → new state for date window:
+  const today = new Date().toISOString().slice(0,10); // "YYYY-MM-DD"
+  const [startDate, setStartDate] = useState(today);
+  const [endDate,   setEndDate]   = useState(today);
+  
   useEffect(() => {
     setLoading(true);
     Promise.all([
       fetch(`${API_URL}/api/system_stats`).then((r) => r.json()),
-      fetch(`${API_URL}/api/detections_stats`).then((r) => r.json()),
-      fetch(`${API_URL}/camera_timeline`).then((r) => r.json()),
+      fetch(
+        `${API_URL}/api/detections_stats?start=${startDate}&end=${endDate}`
+      ).then((r) => r.json()),
+      fetch(
+        `${API_URL}/camera_timeline?start=${startDate}&end=${endDate}`
+      ).then((r) => r.json()),
     ])
       .then(([sys, det, camtl]) => {
         console.log("Sys:", sys, "Det:", det, "CamTimeLine:", camtl);
@@ -61,7 +69,7 @@ const StatsPage = () => {
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [startDate, endDate]);
   
   if (loading) return <div>Loading stats…</div>;
   if (error) return <div className="text-red-500">Error: {error}</div>;
@@ -73,7 +81,8 @@ const StatsPage = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex items-center gap-3">
-              <Camera className="text-primary" />
+              {/* Swap to a CPU / processor icon for “model” */}
+              <Cpu className="text-primary" />
               <CardTitle>Model Used</CardTitle>
             </CardHeader>
             <CardContent className="text-2xl font-semibold text-foreground">
@@ -83,11 +92,12 @@ const StatsPage = () => {
 
           <Card>
             <CardHeader className="flex items-center gap-3">
-              <User className="text-primary" />
-              <CardTitle>Total Subjects</CardTitle>
+              {/* a video-camera icon makes more sense for “active cameras” */}
+              <Camera className="text-primary" />
+              <CardTitle>Active Cameras</CardTitle>
             </CardHeader>
             <CardContent className="text-2xl font-semibold text-foreground">
-              {sysstats.total_subjects}
+              {sysstats.active_cameras}
             </CardContent>
           </Card>
 
@@ -105,8 +115,9 @@ const StatsPage = () => {
               or repurpose this slot (e.g. count of returned subjects): */}
           <Card>
             <CardHeader className="flex items-center gap-3">
-              <Clock className="text-primary" />
-              <CardTitle>Subjects Listed</CardTitle>
+              {/* switch to a “people” or “user” icon for subjects */}
+              <User className="text-primary" />
+              <CardTitle>Total Subjects</CardTitle>
             </CardHeader>
             <CardContent className="text-2xl font-semibold text-foreground">
               {sysstats.subjects.length}
@@ -115,6 +126,29 @@ const StatsPage = () => {
         </div>
 
         <div className="bg-background rounded-2xl p-6 shadow-md">
+          <div >
+          <div className="date-picker-row" style={{ marginBottom: '1rem' }}>
+          <label>
+            start Date:&nbsp;
+            <input
+              type="date"
+              value={startDate}
+              max={endDate}
+              onChange={e => setStartDate(e.target.value)}
+            />
+          </label>
+          &nbsp;&nbsp;
+          <label>
+          end Date:&nbsp;
+            <input
+              type="date"
+              value={endDate}
+              min={startDate}
+              onChange={e => setEndDate(e.target.value)}
+            />
+          </label>
+        </div>            
+          </div>
           <h2 className="text-xl font-semibold mb-4 text-foreground">
             Activity Overview
           </h2>

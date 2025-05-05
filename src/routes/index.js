@@ -9,6 +9,7 @@ import AnalysisTable from '../components/analy_tab/AnalysisTable';
 import StatsPage     from '../components/stats/StatsPage';
 import Tracker       from '../components/journey/Tracker';
 import SubjectMan    from '../components/admin/SubjectMan';
+import SettingsPage    from '../components/settings/Settings';
 // import LocationTree    from '../components/infra_layout/add_location';
 
 const publicRoutes = [
@@ -25,6 +26,8 @@ const privateRoutes = [
   { path: "stats", element: <StatsPage /> },
   { path: "tracker", element: <Tracker /> },
   { path: "subjectman", element: <SubjectMan /> },
+  { path: "settings", element: <SettingsPage /> },
+  
   // { path: "location", element: <LocationTree /> },
 ];
 

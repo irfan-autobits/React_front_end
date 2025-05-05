@@ -21,18 +21,13 @@ const Tracker = () => {
     if (!personName) return;
   
     try {
-      const response = await fetch(
-        `${API_URL}/api/movement/${encodeURIComponent(personName)}`,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            // convert local inputs into full UTC ISO strings:
-            start_time: localToUtcIso(startTime),
-            end_time:   localToUtcIso(endTime),
-          }),
-        }
-      );
+     const qs = new URLSearchParams({
+       start: localToUtcIso(startTime),
+       end:   localToUtcIso(endTime),
+     }).toString();
+     const response = await fetch(
+       `${API_URL}/api/movement/${encodeURIComponent(personName)}?${qs}`
+     );
   
       const data = await response.json();
       console.log("API response:", data);
@@ -42,8 +37,6 @@ const Tracker = () => {
       setMovementHistory([]);
     }
   };
-  
-  
 
   // Generate nodes and edges for React Flow from movementHistory
   const generateNodesAndEdges = () => {
