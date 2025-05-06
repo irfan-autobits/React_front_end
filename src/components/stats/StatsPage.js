@@ -46,30 +46,39 @@ const StatsPage = () => {
   const today = new Date().toISOString().slice(0,10); // "YYYY-MM-DD"
   const [startDate, setStartDate] = useState(today);
   const [endDate,   setEndDate]   = useState(today);
-  
+  const [dateLoading, setDateLoading] = useState(false);
+  // 1️⃣ On‐mount: fetch only system_stats
   useEffect(() => {
     setLoading(true);
+    fetch(`${API_URL}/api/system_stats`)
+      .then(r => r.json())
+      .then(sys => setSysStats(sys))
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+
+      // Also load *today’s* detection + timeline data immediately
+      fetchDateStats();
+  }, []);
+
+  // 2️⃣ Handler to fetch detection & timeline _on demand_
+  const fetchDateStats = () => {
+    setDateLoading(true);
     Promise.all([
-      fetch(`${API_URL}/api/system_stats`).then((r) => r.json()),
-      fetch(
-        `${API_URL}/api/detections_stats?start=${startDate}&end=${endDate}`
-      ).then((r) => r.json()),
-      fetch(
-        `${API_URL}/camera_timeline?start=${startDate}&end=${endDate}`
-      ).then((r) => r.json()),
+      fetch(`${API_URL}/api/detections_stats?start=${startDate}&end=${endDate}`)
+        .then(r => r.json()),
+      fetch(`${API_URL}/api/camera_timeline?start=${startDate}&end=${endDate}`)
+        .then(r => r.json())
     ])
-      .then(([sys, det, camtl]) => {
-        console.log("Sys:", sys, "Det:", det, "CamTimeLine:", camtl);
-        setSysStats(sys);
+      .then(([det, camtl]) => {
         setDayData(det.day_stats);
         setCamData(det.camera_stats);
         setSubData(det.subject_stats);
         setCamTmln(camtl.camData);
         setCamRange(camtl.range);
       })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [startDate, endDate]);
+      .catch(e => setError(e.message))
+      .finally(() => setDateLoading(false));
+  };
   
   if (loading) return <div>Loading stats…</div>;
   if (error) return <div className="text-red-500">Error: {error}</div>;
@@ -147,6 +156,14 @@ const StatsPage = () => {
               onChange={e => setEndDate(e.target.value)}
             />
           </label>
+          &nbsp;&nbsp;
+          <button
+            onClick={fetchDateStats}
+            disabled={dateLoading}
+            className="px-4 py-1 bg-primary text-white rounded"
+          >
+            {dateLoading ? "Loading…" : "Show"}
+          </button>          
         </div>            
           </div>
           <h2 className="text-xl font-semibold mb-4 text-foreground">
