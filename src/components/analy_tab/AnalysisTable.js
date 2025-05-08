@@ -1,140 +1,133 @@
 // src/components/AnalysisTable.js
 import React, { useState, useEffect } from 'react';
 import Cell from "./cell";
-import { parseTimestamp, formatTimestamp } from '../utils/time';
 const API_URL = process.env.REACT_APP_API_URL;
 
-const AnalysisTable = () => {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortField, setSortField] = useState('');
-  const [sortOrder, setSortOrder] = useState('asc');
-  const itemsPerPage = 100;
+export default function AnalysisTable() {
+  const [data, setData]         = useState([]);
+  const [search, setSearch]     = useState("");
+  const [page, setPage]         = useState(1);
+  const [sortField, setSortField] = useState("timestamp");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [loading, setLoading]   = useState(true);
+  const [total, setTotal]       = useState(0);
+  const ITEMS_PER_PAGE = 100;
 
-  useEffect(() => {
-    fetchData(currentPage);
-  }, [currentPage]);
+  const limit = ITEMS_PER_PAGE;  // no need for useState
+  const fetchData = async () => {
+    setLoading(true);
+    const qs = new URLSearchParams({ 
+       page, 
+       limit, 
+       search, 
+       sort_field: sortField, 
+       sort_order: sortOrder 
+    });
+    const res = await fetch(`${API_URL}/api/reco_table?${qs}`);
+    const json = await res.json();
+    setData(json.detections || []);
+    setTotal(json.total || 0);
+    setLoading(false);
+  };
 
-  const fetchData = async (page) => {
-    try {
-      const params = new URLSearchParams();
-      params.append('page', page);
-      params.append('limit', itemsPerPage);
-      if (searchTerm) {
-        params.append('search', searchTerm);
-      }
-      if (sortField) {
-        params.append('sort_field', sortField);
-        params.append('sort_order', sortOrder);
-      }
-      const response = await fetch(`${API_URL}/api/reco_table?${params.toString()}`);
-      const jsonData = await response.json();
-      setData(jsonData.detections || []);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching detection table data:', error);
-      setLoading(false);
+  // re-fetch on any dependency change
+   useEffect(() => {
+     setLoading(true);
+     async function doFetch() {
+       try {fetchData();
+       } 
+       finally {
+         setLoading(false);
+       }
+     }
+     doFetch();
+   }, [page, search, sortField, sortOrder]);  // now the callback itself is sync
+
+  const handleSort = field => {
+    if (sortField === field) {
+      setSortOrder(o => o === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortOrder("asc");
     }
+    setPage(1);
   };
-  
-
-  const handleSort = (field) => {
-    const newSortOrder = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
-    setSortField(field);
-    setSortOrder(newSortOrder);
-  };
-
-  const handlePrevPage = () => {
-    if (currentPage > 1) setCurrentPage(prev => prev - 1);
-  };
-
-  const handleNextPage = () => {
-    setCurrentPage(prev => prev + 1);
-  };
-
-  const filteredData = data.filter(record =>
-    Object.values(record).some(val => String(val).toLowerCase().includes(searchTerm.toLowerCase()))
-  );
-
-  const sortedData = [...filteredData].sort((a, b) => {
-    if (!sortField) return 0;
-    if (a[sortField] < b[sortField]) return sortOrder === 'asc' ? -1 : 1;
-    if (a[sortField] > b[sortField]) return sortOrder === 'asc' ? 1 : -1;
-    return 0;
-  });
-
-  if (loading) {
-    return <div>Loading detection records...</div>;
-  }
 
   return (
     <div>
       <h2>Detection Table</h2>
-      <input
-        type="text"
-        placeholder="Filter results..."
-        value={searchTerm}
-        onChange={e => {
-          setSearchTerm(e.target.value);
-          setCurrentPage(1);
-        }}
-      />
-      <table>
-        <thead>
-          <tr>
-            <th onClick={() => handleSort('id')}>ID</th>
-            <th onClick={() => handleSort('person')}>Person Name</th>
-            <th onClick={() => handleSort('camera_name')}>Camera Name</th>
-            <th onClick={() => handleSort('camera_tag')}>Camera Tag</th>
-            <th onClick={() => handleSort('det_score')}>Detection Score</th>
-            <th onClick={() => handleSort('distance')}>Distance from known</th>
-            <th onClick={() => handleSort('timestamp')}>Timestamp</th>
-            <th>Image</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sortedData.map((record, index) => (
-            <tr key={index}>
-              <td>{record.id}</td>
-              <td>{record.subject}</td>
-              <td>{record.camera_name}</td>
-              <td>{record.camera_tag}</td>
-              <td>{(record.det_score).toFixed(1)}%</td>
-              <td>{record.distance}</td>
-              <td>
-                {/*
-                  If you’re using your <Cell> helper, pass it the raw timestamp.
-                  Otherwise, you can inline:
-                */}
-                <Cell ts={record.timestamp} />
-                {/*
-                  or, if you prefer inline without <Cell>:
-                  formatTimestamp(parseTimestamp(record.timestamp))
-                */}
-              </td>
 
-              <td>
-                <img src={record.det_face} alt="Detected Face" width="50" height="50" />
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <div className="pagination">
-        <button onClick={handlePrevPage} disabled={currentPage === 1}>
-          Previous
-        </button>
-        <span>
-          Page {currentPage}
-        </span>
-        <button onClick={handleNextPage}>
-          Next
-        </button>
-      </div>
+      <input
+        type="search"
+        placeholder="Search…"
+        value={search}
+        onChange={e => { setSearch(e.target.value); setPage(1); }}
+      />
+
+      {loading
+        ? <p>Loading…</p>
+        : (
+          <>
+            <table>
+              <thead>
+                <tr>
+                  {[
+                    ["ID",           "id"],           // now ties back to rec_no on the server
+                    ["Person",       "subject"],
+                    ["Camera",       "camera_name"],
+                    ["Tag",          "camera_tag"],
+                    ["Score",        "det_score"],
+                    ["Distance",     "distance"],
+                    ["When",         "timestamp"],
+                  ].map(([label, key]) => (
+                    <th key={key} onClick={()=>handleSort(key)}>
+                      {label}
+                      {sortField===key ? (sortOrder==="asc"?" 🔼":" 🔽") : null}
+                    </th>
+                  ))}
+                  <th>Image</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((d,i) => (
+                  <tr key={i}>
+                    <td>{d.id}</td>
+                    <td>{d.subject}</td>
+                    <td>{d.camera_name}</td>
+                    <td>{d.camera_tag}</td>
+                    <td>{d.det_score.toFixed(1)}%</td>
+                    <td>{d.distance}</td>
+                    <td><Cell ts={d.timestamp} /></td>
+                    <td>
+                      <img 
+                        src={d.det_face}
+                        width={50}
+                        height={50}
+                        alt={`  ${d.subject}`} 
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="pagination">
+            <button onClick={()=>setPage(p=>Math.max(p-1,1))} disabled={page===1}>
+              Prev
+            </button>
+            <span>
+              Page {page} of {Math.ceil(total/limit)}
+            </span>
+            <button 
+              onClick={()=>setPage(p=>p+1)} 
+              disabled={page >= Math.ceil(total/limit)}
+            >
+              Next
+            </button>
+            </div>
+          </>
+        )
+      }
     </div>
   );
-};
-
-export default AnalysisTable;
+}
